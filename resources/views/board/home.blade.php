@@ -14,18 +14,44 @@
 
 /* NBTX Club visual system */
 :root{color-scheme:dark;--gold:#d8b477;--edge:#483a29}body{background:#0d0e0e;color:#f4ede2;font-family:system-ui,sans-serif}header{position:sticky;top:0;z-index:5;background:#141414;border-color:#443624;padding:18px 30px 18px 275px}header strong{font:24px Georgia,serif;color:var(--gold);letter-spacing:.1em}header button{background:transparent;color:var(--gold);border:1px solid var(--gold)}main{max-width:1500px;margin:0;padding:35px 35px 70px 285px}h1{font:clamp(36px,4vw,54px) Georgia,serif;letter-spacing:0;margin:14px 0}h2{font:23px Georgia,serif}section{background:linear-gradient(140deg,#1b1b1b,#151515);border:1px solid #45392c;border-radius:12px;padding:24px}.layout{gap:22px}button{background:linear-gradient(#e2c58c,#bc9457);color:#16120c;font-weight:600}input,textarea,select{background:#101010;border-color:#5c503e}.item{background:#2b241c}.muted,small{color:#bdb2a4}.message{border-color:#41372b}#notice{color:var(--gold)}.nbtx-sidebar{position:fixed;inset:0 auto 0 0;width:245px;background:linear-gradient(#181715,#101010);border-right:1px solid #453823;padding:24px 14px;overflow-y:auto;z-index:10}.nbtx-logo{display:block;margin:6px 8px 28px;border:1px solid #b99a63;color:#f6edda;text-decoration:none;text-align:center;padding:14px 8px;font:34px Georgia,serif;letter-spacing:.1em}.nbtx-logo span{display:block;font:11px system-ui;letter-spacing:.5em;color:#e2bd7d}.nbtx-sidebar nav{display:grid;gap:5px}.nbtx-sidebar nav a{display:block;color:#e8e0d4;text-decoration:none;padding:13px;border-radius:7px;font-size:14px}.nbtx-sidebar nav a:hover,.nbtx-sidebar nav a:first-child{background:#60482c}.nbtx-intro{padding-bottom:20px;border-bottom:1px solid #453823;margin-bottom:24px}.nbtx-eyebrow{color:var(--gold);font-size:11px;letter-spacing:.23em;text-transform:uppercase}.nbtx-links{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 24px}.nbtx-links a{padding:12px 17px;border:1px solid #6a5233;border-radius:8px;color:#ead0a1;text-decoration:none;background:#241e16}@media(max-width:850px){.nbtx-sidebar{position:static;width:auto;padding:12px;border-right:0}.nbtx-logo{display:inline-block;font-size:23px;margin:0 0 8px}.nbtx-sidebar nav{display:flex;overflow-x:auto}.nbtx-sidebar nav a{white-space:nowrap;padding:9px}header{padding:12px 16px}main{padding:18px}.layout{grid-template-columns:1fr}}
+
+/* Member dashboard refinement */
+body{background:#10100f}.nbtx-sidebar{background:#151411}.nbtx-sidebar nav a:first-child{background:#3c3021;color:#f5d49b;border-left:2px solid #d8b477}
+header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
+.dashboard-heading{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-bottom:27px}
+.dashboard-heading h1{font-size:clamp(30px,3vw,44px);margin:10px 0 8px;letter-spacing:-.035em}
+.dashboard-heading p{margin:0;font-size:14px}.dashboard-date{color:#bcae98;font-size:13px;white-space:nowrap;border:1px solid #383027;border-radius:30px;padding:10px 15px}
+.dashboard-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:38px}
+.shortcut{min-width:0;display:flex;align-items:center;gap:12px;padding:21px 16px;background:#1c1b18;border:1px solid #393127;border-radius:12px;text-decoration:none;color:#f2ece1;transition:border-color .15s,transform .15s}
+.shortcut:hover{border-color:#c39b5d;transform:translateY(-2px)}.shortcut-icon{font-size:23px;color:#d8b477;width:30px;flex-shrink:0;text-align:center}.shortcut strong{display:block;font-size:15px;font-weight:650}.shortcut small{display:block;font-size:11px;margin-top:4px;line-height:1.4}.shortcut-arrow{margin-left:auto;color:#b69a6d}
+.dashboard-section-label{display:flex;align-items:end;justify-content:space-between;margin:0 0 17px;gap:12px}.dashboard-section-label h2{font:27px Georgia,serif;margin:6px 0 0}.dashboard-section-label>.muted{font-size:12px}
+.activity-panel{margin-bottom:18px!important}.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.dashboard-grid>section,.activity-panel{background:#1a1917;border:1px solid #393228;padding:23px;border-radius:12px}
+.dashboard-grid>section h2,.activity-panel h2{font:21px Georgia,serif;margin:0 0 18px;padding-bottom:15px;border-bottom:1px solid #342e26}
+.dashboard-grid>section h2:not(:first-child){margin-top:25px}
+.dashboard-grid .message{font-size:14px}.dashboard-grid label{font-size:13px;color:#d7cbbb}.dashboard-grid button{font-size:13px}
+.settings-panel{margin-top:25px;border:1px solid #383027;border-radius:10px;background:#171613}.settings-panel summary{cursor:pointer;padding:16px 20px;color:#e8d5b2;font-size:14px}.settings-panel summary span{color:#998e7e;font-size:12px;margin-left:12px}.settings-panel section{border:0;background:transparent}
+@media(max-width:1150px){.dashboard-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.dashboard-heading{align-items:start;flex-direction:column}.dashboard-date{display:none}.dashboard-shortcuts{gap:10px}.shortcut{padding:14px 11px}.shortcut small{display:none}.shortcut-icon{width:22px;font-size:19px}.shortcut-arrow{display:none}.dashboard-section-label>.muted{display:none}.dashboard-grid{grid-template-columns:1fr}.dashboard-grid>section,.activity-panel{padding:18px}.settings-panel summary span{display:block;margin:5px 0 0}}
 </style>
 </head>
 <body>
 <aside class="nbtx-sidebar"><a class="nbtx-logo" href="{{ route('board.home') }}">NBTX<span>CLUB</span></a><nav aria-label="Member navigation"><a href="{{ route('board.home') }}">⌂ &nbsp; Home</a><a href="#directory">◉ &nbsp; Directory</a><a href="#conversations">▤ &nbsp; Messages</a><a href="#board-meetings">▦ &nbsp; Meetings</a><a href="#referrals">↗ &nbsp; Referrals</a><a href="#opportunities">✦ &nbsp; Asks &amp; offers</a><a href="#profile">⚙ &nbsp; Profile</a>@if(in_array(auth('board')->user()->role, ['admin','super_admin'], true))<a href="{{ route('board.admin') }}">⚙ &nbsp; Admin</a>@endif</nav></aside>
 <header><strong>NBTX CLUB</strong><form method="post" action="{{ route('board.logout') }}">@csrf<button type="submit">Sign out</button></form></header>
 <main>
-<div class="nbtx-intro"><span class="nbtx-eyebrow">The private network · New Braunfels, Texas</span><h1>Welcome, {{ auth('board')->user()->name }}</h1><p class="muted">Good business starts with great connections.</p></div><div class="nbtx-links"><a href="#board-meetings">Meetings</a><a href="#directory">Member directory</a><a href="#conversations">Messages</a><a href="#new-referral">Make a referral</a></div>
+<div class="dashboard-heading"><div><span class="nbtx-eyebrow">MEMBER OVERVIEW · NEW BRAUNFELS</span><h1>Good to see you, {{ explode(' ', trim(auth('board')->user()->name))[0] }}.</h1><p class="muted">Your connections, conversations, and opportunities—all in one place.</p></div><div class="dashboard-date">{{ now()->format('l, F j') }}</div></div>
+<div class="dashboard-shortcuts" aria-label="Quick actions">
+<a class="shortcut" href="#board-meetings"><span class="shortcut-icon">▦</span><span><strong>Meetings</strong><small>Upcoming events &amp; RSVPs</small></span><span class="shortcut-arrow">↗</span></a>
+<a class="shortcut" href="#conversations"><span class="shortcut-icon">✉</span><span><strong>Messages</strong><small>Member conversations</small></span><span class="shortcut-arrow">↗</span></a>
+<a class="shortcut" href="#directory"><span class="shortcut-icon">◉</span><span><strong>Directory</strong><small>Find local business owners</small></span><span class="shortcut-arrow">↗</span></a>
+<a class="shortcut" href="#new-referral"><span class="shortcut-icon">↗</span><span><strong>New referral</strong><small>Share an opportunity</small></span><span class="shortcut-arrow">↗</span></a>
+</div>
+<div class="dashboard-section-label"><div><span class="nbtx-eyebrow">YOUR NETWORK</span><h2>What's happening</h2></div><span class="muted">Stay connected with your community</span></div>
 <p class="muted">A private community of local business owners.</p>
 @if(in_array(auth('board')->user()->role, ['admin', 'super_admin'], true))
 <p><a href="{{ route('board.admin') }}" style="color:#e3c98c">Manage invitations and approvals</a></p>
 @endif<p id="notice" role="status" aria-live="polite"></p>
-<section style="margin-bottom:18px"><h2>Phone notifications</h2><p class="muted">Enable alerts on this device. On iPhone, add NBTX Club to your Home Screen first, then open it there to enable notifications.</p>
+<details class="settings-panel"><summary>Notification settings <span>Manage device alerts and preferences</span></summary><section><h2>Phone notifications</h2><p class="muted">Enable alerts on this device. On iPhone, add NBTX Club to your Home Screen first, then open it there to enable notifications.</p>
 <button type="button" id="enable-board-push">Enable notifications</button>
 <button type="button" id="disable-board-push">Disable on this device</button>
 <button type="button" id="test-board-push">Send test alert</button>
@@ -33,10 +59,10 @@
 <label><input type="checkbox" name="meetings" checked style="width:auto"> Meeting announcements and reminders</label>
 <label><input type="checkbox" name="referrals" checked style="width:auto"> Business referrals</label>
 <button type="submit">Save notification preferences</button></form>
-<p id="push-status" class="muted" aria-live="polite"></p><p id="push-test-status" class="muted" aria-live="polite"></p></section>
-<section style="margin-bottom:18px"><h2>Activity <span id="activity-count"></span></h2><div id="board-activity">Loading updates…</div></section>
-<div class="layout">
-<section><h2>Upcoming meetings</h2><div id="board-meetings">Loading meetings…</div>
+<p id="push-status" class="muted" aria-live="polite"></p><p id="push-test-status" class="muted" aria-live="polite"></p></section></details>
+<section class="activity-panel"><h2>Recent activity <span id="activity-count"></span></h2><div id="board-activity">Loading updates…</div></section>
+<div class="layout dashboard-grid">
+<section class="dashboard-panel"><h2>Upcoming meetings</h2><div id="board-meetings">Loading meetings…</div>
 @if(in_array(auth('board')->user()->role, ['admin', 'super_admin'], true))
 <h2>Schedule a meeting</h2><form id="new-meeting">
 <label>Title<input name="title" required maxlength="180"></label>
@@ -47,19 +73,19 @@
 <button type="submit">Create meeting</button></form>
 @endif</section>
 
-<section><h2>Business referrals</h2><p class="muted">Share a business opportunity privately with another member. Avoid including confidential customer information without permission.</p>
+<section class="dashboard-panel"><h2>Business referrals</h2><p class="muted">Share a business opportunity privately with another member. Avoid including confidential customer information without permission.</p>
 <form id="new-referral"><label>Send to<select name="to_member_id" id="referral-recipient" required><option value="">Select a member</option></select></label>
 <label>Opportunity<input name="subject" maxlength="180" required></label>
 <label>Details<textarea name="details" maxlength="3000" rows="3"></textarea></label>
 <button type="submit">Send referral</button></form><div id="referrals">Loading referrals…</div></section>
-<section><h2>Member asks &amp; offers</h2><p class="muted">Ask fellow owners for advice, resources or introductions—or share something your business can offer.</p>
+<section class="dashboard-panel"><h2>Member asks &amp; offers</h2><p class="muted">Ask fellow owners for advice, resources or introductions—or share something your business can offer.</p>
 <form id="new-opportunity"><label>Post type<select name="type"><option value="ask">I need help with…</option><option value="offer">I can help with…</option></select></label>
 <label>Headline<input name="title" maxlength="180" required></label><label>Details<textarea name="details" maxlength="3000" rows="3" required></textarea></label>
 <button type="submit">Post to NBTX Club</button></form>
 <label>Show<select id="opportunity-filter"><option value="">All open posts</option><option value="ask">Requests</option><option value="offer">Offers</option></select></label>
 <div id="opportunities">Loading opportunities…</div></section>
-<section><h2>Member directory</h2><div id="directory">Loading members…</div></section>
-<section><h2>My business profile</h2>
+<section class="dashboard-panel"><h2>Member directory</h2><div id="directory">Loading members…</div></section>
+<section class="dashboard-panel"><h2>My business profile</h2>
 <form id="profile">
 <label>Display name<input name="name" required value="{{ auth('board')->user()->name }}"></label>
 <label>Company<input name="company" value="{{ auth('board')->user()->company }}"></label>
@@ -68,8 +94,8 @@
 <label>Website<input name="website" type="url" value="{{ auth('board')->user()->website }}"></label>
 <label>About me<textarea name="bio" rows="3">{{ auth('board')->user()->bio }}</textarea></label>
 <button type="submit">Save profile</button></form></section>
-<section><h2>Conversations</h2><form id="new-conversation"><label>Conversation type<select name="type" id="conversation-type"><option value="direct">Direct message</option><option value="group">Group chat</option></select></label><label>Members<select name="member_ids" id="conversation-members" multiple size="5" required></select></label><label>Group name (for group chats)<input name="name" maxlength="120" placeholder="Business owners discussion"></label><button type="submit">Start conversation</button></form><div id="conversations">Loading conversations…</div></section>
-<section><h2 id="conversation-title">Chat</h2><div class="messages" id="messages" aria-live="polite">Choose a conversation to view messages.</div>
+<section class="dashboard-panel"><h2>Conversations</h2><form id="new-conversation"><label>Conversation type<select name="type" id="conversation-type"><option value="direct">Direct message</option><option value="group">Group chat</option></select></label><label>Members<select name="member_ids" id="conversation-members" multiple size="5" required></select></label><label>Group name (for group chats)<input name="name" maxlength="120" placeholder="Business owners discussion"></label><button type="submit">Start conversation</button></form><div id="conversations">Loading conversations…</div></section>
+<section class="dashboard-panel"><h2 id="conversation-title">Chat</h2><div class="messages" id="messages" aria-live="polite">Choose a conversation to view messages.</div>
 <form id="chat"><label>Message<textarea name="body" rows="2" maxlength="5000" required></textarea></label><button type="submit" id="send" disabled>Send</button></form></section>
 </div>
 </main>
