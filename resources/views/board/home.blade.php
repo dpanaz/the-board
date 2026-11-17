@@ -40,6 +40,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 .directory-tools{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin:15px 0}.directory-tools label{font-size:12px;color:#d2b98e}.directory-tools input,.directory-tools select{margin-top:6px}.directory-cards{display:grid;gap:10px}.directory-member{display:flex;align-items:center;gap:12px;border:1px solid #493b2a;background:#24211d;border-radius:10px;padding:13px}.directory-avatar{width:43px;height:43px;flex:0 0 43px;border-radius:50%;background:#55432a;color:#f4e6d2;display:grid;place-items:center;font-weight:700;font-size:13px}.directory-info{flex:1;min-width:0}.directory-info strong{display:block;color:#f5e9d5}.directory-info p{margin:4px 0;font-size:13px}.directory-info small{display:block;color:#baa88f;font-size:11px}.directory-connect{padding:8px 11px;font-size:12px;white-space:nowrap}@media(max-width:700px){.directory-tools{grid-template-columns:1fr}.directory-member{flex-wrap:wrap}.directory-connect{margin-left:55px}}
 .referral-controls{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin:14px 0}.referral-controls label{font-size:12px;color:#c9b393}.referral-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.referral-summary-item{padding:10px;border:1px solid #53432d;border-radius:8px;background:#252019;text-align:center}.referral-summary-item strong{display:block;font-size:21px;color:#e6c38a}.referral-summary-item small{font-size:11px}.referral-card{padding:14px 0;border-bottom:1px solid #473a2a}.referral-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.referral-heading strong{color:#f2e5d1}.referral-status{border:1px solid #8a704b;border-radius:20px;padding:4px 9px;font-size:11px;text-transform:capitalize;color:#e6c38a}.referral-card p{white-space:pre-wrap;overflow-wrap:anywhere}.referral-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:12px}.referral-actions select{width:auto;max-width:180px}.referral-followup{font-size:12px;padding:9px 12px}@media(max-width:700px){.referral-controls{grid-template-columns:1fr}.referral-summary{grid-template-columns:repeat(2,1fr)}}
 .activity-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.activity-heading h2{margin:0}.activity-actions{display:flex;gap:7px;flex-wrap:wrap}.activity-actions button{padding:7px 11px;font-size:12px;background:#332b20;color:#e7d3b3;border:1px solid #58472e}.activity-actions button[aria-pressed="true"]{background:#c5a16a;color:#19140d}.activity-item{padding:13px 0;border-bottom:1px solid #493b2a}.activity-item-heading{display:flex;gap:9px;align-items:center}.activity-item-heading strong{color:#f0e3cf}.activity-new{border:1px solid #aa8650;border-radius:20px;padding:2px 7px;font-size:10px;color:#e5c18c}.activity-item p{margin:9px 0;white-space:pre-wrap;overflow-wrap:anywhere}.activity-item-actions{display:flex;gap:12px;align-items:center}.activity-item-actions a{color:#e3c98c;font-size:13px}.activity-item-actions button{padding:6px 10px;font-size:12px}
+.directory-tools{grid-template-columns:2fr 1fr 1fr}.directory-bio{font-size:12px;line-height:1.5;color:#c5b9a7;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:normal}.directory-website{display:inline-block;color:#e6c38a;font-size:12px;margin-top:7px}.conversation-search-label{font-size:12px;color:#d0b68c}.conversation-search-label input{margin-top:6px}.item[aria-pressed="true"]{outline:2px solid #c5a16a}@media(max-width:700px){.directory-tools{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -96,7 +97,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <button type="submit">Post to NBTX Club</button></form></details>
 <label>Show<select id="opportunity-filter"><option value="">All open posts</option><option value="ask">Requests</option><option value="offer">Offers</option></select></label>
 <div id="opportunities">Loading opportunities…</div></section>
-<section class="dashboard-panel"><h2>Member directory</h2><div class="directory-tools"><label>Search members<input id="directory-search" type="search" placeholder="Search name, company, or industry" autocomplete="off"></label><label>Industry<select id="directory-industry"><option value="">All industries</option></select></label></div><p id="directory-result-count" class="muted" role="status"></p><div id="directory" class="directory-cards">Loading members…</div></section>
+<section class="dashboard-panel"><h2>Member directory</h2><div class="directory-tools"><label>Search members<input id="directory-search" type="search" placeholder="Search name, company, or industry" autocomplete="off"></label><label>Industry<select id="directory-industry"><option value="">All industries</option></select></label><label>Sort by<select id="directory-sort"><option value="name">Name A–Z</option><option value="company">Company A–Z</option></select></label></div><p id="directory-result-count" class="muted" role="status"></p><div id="directory" class="directory-cards">Loading members…</div></section>
 <section class="dashboard-panel"><h2>My business profile</h2>
 <details class="create-panel"><summary>Edit business profile</summary><form id="profile">
 <label>Display name<input name="name" required value="{{ auth('board')->user()->name }}"></label>
@@ -106,7 +107,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <label>Website<input name="website" type="url" value="{{ auth('board')->user()->website }}"></label>
 <label>About me<textarea name="bio" rows="3">{{ auth('board')->user()->bio }}</textarea></label>
 <button type="submit">Save profile</button></form></details></section>
-<section class="dashboard-panel"><h2>Conversations</h2><details class="create-panel"><summary>+ Start a conversation</summary><form id="new-conversation"><label>Conversation type<select name="type" id="conversation-type"><option value="direct">Direct message</option><option value="group">Group chat</option></select></label><label>Members<select name="member_ids" id="conversation-members" multiple size="5" required></select></label><label>Group name (for group chats)<input name="name" maxlength="120" placeholder="Business owners discussion"></label><button type="submit">Start conversation</button></form></details><div id="conversations">Loading conversations…</div></section>
+<section class="dashboard-panel"><h2>Conversations</h2><label class="conversation-search-label">Find conversation<input type="search" id="conversation-search" placeholder="Search conversations" autocomplete="off"></label><details class="create-panel"><summary>+ Start a conversation</summary><form id="new-conversation"><label>Conversation type<select name="type" id="conversation-type"><option value="direct">Direct message</option><option value="group">Group chat</option></select></label><label>Members<select name="member_ids" id="conversation-members" multiple size="5" required></select></label><label>Group name (for group chats)<input name="name" maxlength="120" placeholder="Business owners discussion"></label><button type="submit">Start conversation</button></form></details><div id="conversations">Loading conversations…</div></section>
 <section class="dashboard-panel"><h2 id="conversation-title">Chat</h2><div class="messages" id="messages" aria-live="polite">Choose a conversation to view messages.</div>
 <form id="chat"><label>Message<textarea name="body" rows="2" maxlength="5000" required></textarea></label><button type="submit" id="send" disabled>Send</button></form></section>
 </div>
@@ -214,7 +215,7 @@ function renderDirectory(){
  const search=document.getElementById('directory-search').value.trim().toLowerCase();
  const industry=document.getElementById('directory-industry').value;
  const root=document.getElementById('directory');root.replaceChildren();
- const filtered=directoryMembers.filter(m=>(!industry||(m.industry||'')===industry)&&(!search||[m.name,m.company,m.industry,m.title].some(v=>String(v||'').toLowerCase().includes(search))));
+ const filtered=directoryMembers.filter(m=>(!industry||(m.industry||'')===industry)&&(!search||[m.name,m.company,m.industry,m.title,m.bio].some(v=>String(v||'').toLowerCase().includes(search))));const sort=document.getElementById('directory-sort').value;filtered.sort((a,b)=>String(a[sort]||a.name||'').localeCompare(String(b[sort]||b.name||'')));
  document.getElementById('directory-result-count').textContent=filtered.length+' member'+(filtered.length===1?'':'s')+' found';
  for(const member of filtered){
   const card=el('article','','directory-member');
@@ -222,6 +223,8 @@ function renderDirectory(){
   const info=el('div','','directory-info');info.append(el('strong',member.name),el('p',member.company||'Business owner'));
   if(member.industry)info.append(el('small',member.industry));
   if(member.title)info.append(el('small',member.title));
+  if(member.bio)info.append(el('p',member.bio,'directory-bio'));
+  if(member.website){try{const url=new URL(member.website);if(['https:','http:'].includes(url.protocol)){const link=document.createElement('a');link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Visit website ↗';link.className='directory-website';info.append(link);}}catch(error){}}
   card.append(initials,info);
   if(member.id!=={{ auth('board')->id() }}){
    const button=el('button','Message','directory-connect');button.type='button';button.onclick=()=>startMemberConversation(member);card.append(button);
@@ -232,6 +235,7 @@ function renderDirectory(){
 }
 document.getElementById('directory-search').addEventListener('input',renderDirectory);
 document.getElementById('directory-industry').addEventListener('change',renderDirectory);
+document.getElementById('directory-sort').addEventListener('change',renderDirectory);
 async function loadDirectory(){
  const data=await api('/api/members');directoryMembers=data.data;showMemberSpotlight(data.data);
  const industrySelect=document.getElementById('directory-industry');const selected=industrySelect.value;
@@ -246,14 +250,24 @@ async function loadDirectory(){
  }}
  renderDirectory();
 }
-async function loadConversations(){
- const data=await api('/api/conversations');const root=document.getElementById('conversations');root.replaceChildren();document.getElementById('stat-messages').textContent=data.data.reduce((sum,c)=>sum+(Number(c.unread_count)||0),0);
- for(const conversation of data.data){
- const button=el('button',(conversation.unread_count ? '● '+conversation.unread_count+' new · ' : '')+(conversation.name||('Conversation #'+conversation.id)),'item');
- button.onclick=()=>{selectedConversation=conversation.id;document.getElementById('conversation-title').textContent=conversation.name||'Direct message';document.getElementById('send').disabled=false;loadMessages().catch(showError)};
- root.append(button);
+let cachedConversations=[];
+function renderConversations(){
+ const root=document.getElementById('conversations');root.replaceChildren();
+ const query=document.getElementById('conversation-search').value.trim().toLowerCase();
+ const visible=cachedConversations.filter(c=>String(c.name||('Conversation #'+c.id)).toLowerCase().includes(query));
+ for(const conversation of visible){
+  const button=el('button',(conversation.unread_count ? '● '+conversation.unread_count+' new · ' : '')+(conversation.name||('Conversation #'+conversation.id)),'item');
+  button.type='button';button.setAttribute('aria-pressed',String(selectedConversation===conversation.id));
+  button.onclick=()=>{selectedConversation=conversation.id;document.getElementById('conversation-title').textContent=conversation.name||'Direct message';document.getElementById('send').disabled=false;renderConversations();loadMessages().catch(showError)};
+  root.append(button);
  }
- if(!data.data.length)root.textContent='No conversations yet.';
+ if(!visible.length)root.textContent=query?'No conversations match your search.':'No conversations yet.';
+}
+document.getElementById('conversation-search').addEventListener('input',renderConversations);
+async function loadConversations(){
+ const data=await api('/api/conversations');cachedConversations=data.data;
+ document.getElementById('stat-messages').textContent=data.data.reduce((sum,c)=>sum+(Number(c.unread_count)||0),0);
+ renderConversations();
 }
 async function loadMessages(){
  if(!selectedConversation)return;
