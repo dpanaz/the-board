@@ -33,6 +33,9 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 .settings-panel{margin-top:25px;border:1px solid #383027;border-radius:10px;background:#171613}.settings-panel summary{cursor:pointer;padding:16px 20px;color:#e8d5b2;font-size:14px}.settings-panel summary span{color:#998e7e;font-size:12px;margin-left:12px}.settings-panel section{border:0;background:transparent}
 @media(max-width:1150px){.dashboard-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.dashboard-heading{align-items:start;flex-direction:column}.dashboard-date{display:none}.dashboard-shortcuts{gap:10px}.shortcut{padding:14px 11px}.shortcut small{display:none}.shortcut-icon{width:22px;font-size:19px}.shortcut-arrow{display:none}.dashboard-section-label>.muted{display:none}.dashboard-grid{grid-template-columns:1fr}.dashboard-grid>section,.activity-panel{padding:18px}.settings-panel summary span{display:block;margin:5px 0 0}}
+
+.overview-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}.stat-card{display:flex;flex-direction:column;gap:9px;background:#1d1b18;border:1px solid #403629;border-radius:12px;padding:22px;text-decoration:none;color:#f5eee1}.stat-card:hover{border-color:#d8b477}.stat-card span{font-size:13px;color:#cfc2b0}.stat-card strong{font:36px Georgia,serif;color:#e6c38a}.stat-card small{font-size:11px;color:#b8a58b}.overview-top{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;margin-bottom:30px}.overview-top section{background:#1b1a17;border:1px solid #403629;border-radius:12px;padding:23px}.overview-top h2{margin:10px 0 17px;font:23px Georgia,serif}.next-meeting-card #next-meeting-preview strong{display:block;font-size:17px;color:#f4e9d7}.next-meeting-card #next-meeting-preview p{margin:8px 0;font-size:13px}.overview-action{display:inline-block;margin-top:15px;color:#e2c18a;text-decoration:none;font-size:13px}.quick-actions-list{display:grid;grid-template-columns:1fr 1fr;gap:9px}.quick-actions-list a{border:1px solid #51412c;border-radius:8px;padding:12px;color:#e8d5b7;text-decoration:none;font-size:13px}.quick-actions-list a:hover{background:#33281b}.create-panel{margin:15px 0;border:1px solid #4d3c29;border-radius:8px;padding:0 12px}.create-panel summary{cursor:pointer;color:#e6c38a;font-size:13px;font-weight:600;padding:13px 0}.create-panel form{padding:5px 0 16px}.dashboard-grid{scroll-margin-top:90px}#board-meetings,#referrals,#opportunities,#directory,#conversations{scroll-margin-top:100px}
+@media(max-width:1100px){.overview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.overview-top{grid-template-columns:1fr}.overview-stats{gap:10px}.stat-card{padding:15px}.stat-card strong{font-size:29px}.quick-actions-list{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -40,14 +43,18 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <header><strong>NBTX CLUB</strong><form method="post" action="{{ route('board.logout') }}">@csrf<button type="submit">Sign out</button></form></header>
 <main>
 <div class="dashboard-heading"><div><span class="nbtx-eyebrow">MEMBER OVERVIEW · NEW BRAUNFELS</span><h1>Good to see you, {{ explode(' ', trim(auth('board')->user()->name))[0] }}.</h1><p class="muted">Your connections, conversations, and opportunities—all in one place.</p></div><div class="dashboard-date">{{ now()->format('l, F j') }}</div></div>
-<div class="dashboard-shortcuts" aria-label="Quick actions">
-<a class="shortcut" href="#board-meetings"><span class="shortcut-icon">▦</span><span><strong>Meetings</strong><small>Upcoming events &amp; RSVPs</small></span><span class="shortcut-arrow">↗</span></a>
-<a class="shortcut" href="#conversations"><span class="shortcut-icon">✉</span><span><strong>Messages</strong><small>Member conversations</small></span><span class="shortcut-arrow">↗</span></a>
-<a class="shortcut" href="#directory"><span class="shortcut-icon">◉</span><span><strong>Directory</strong><small>Find local business owners</small></span><span class="shortcut-arrow">↗</span></a>
-<a class="shortcut" href="#new-referral"><span class="shortcut-icon">↗</span><span><strong>New referral</strong><small>Share an opportunity</small></span><span class="shortcut-arrow">↗</span></a>
+<div class="overview-stats" aria-label="Network overview">
+<a href="#conversations" class="stat-card"><span>Unread messages</span><strong id="stat-messages">—</strong><small>Open conversations ↗</small></a>
+<a href="#board-meetings" class="stat-card"><span>Upcoming meetings</span><strong id="stat-meetings">—</strong><small>View your calendar ↗</small></a>
+<a href="#referrals" class="stat-card"><span>New referrals</span><strong id="stat-referrals">—</strong><small>Review referrals ↗</small></a>
+<a href="#opportunities" class="stat-card"><span>Open opportunities</span><strong id="stat-opportunities">—</strong><small>Explore member posts ↗</small></a>
+</div>
+<div class="overview-top">
+<section class="next-meeting-card"><span class="nbtx-eyebrow">UP NEXT</span><h2>Next meeting</h2><div id="next-meeting-preview" class="muted">Loading upcoming meetings…</div><a href="#board-meetings" class="overview-action">All meetings ↗</a></section>
+<section class="quick-actions-card"><span class="nbtx-eyebrow">QUICK ACTIONS</span><h2>Connect with your network</h2><div class="quick-actions-list"><a href="#directory">Find a member ↗</a><a href="#new-conversation">Start a conversation ↗</a><a href="#new-referral">Send a referral ↗</a><a href="#new-opportunity">Post an opportunity ↗</a></div></section>
 </div>
 <div class="dashboard-section-label"><div><span class="nbtx-eyebrow">YOUR NETWORK</span><h2>What's happening</h2></div><span class="muted">Stay connected with your community</span></div>
-<p class="muted">A private community of local business owners.</p>
+
 @if(in_array(auth('board')->user()->role, ['admin', 'super_admin'], true))
 <p><a href="{{ route('board.admin') }}" style="color:#e3c98c">Manage invitations and approvals</a></p>
 @endif<p id="notice" role="status" aria-live="polite"></p>
@@ -64,37 +71,37 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <div class="layout dashboard-grid">
 <section class="dashboard-panel"><h2>Upcoming meetings</h2><div id="board-meetings">Loading meetings…</div>
 @if(in_array(auth('board')->user()->role, ['admin', 'super_admin'], true))
-<h2>Schedule a meeting</h2><form id="new-meeting">
+<details class="create-panel"><summary>+ Schedule a meeting</summary><form id="new-meeting">
 <label>Title<input name="title" required maxlength="180"></label>
 <label>Start<input type="datetime-local" name="starts_at" required></label>
 <label>End<input type="datetime-local" name="ends_at" required></label>
 <label>Location<input name="location" maxlength="255" placeholder="The Clubhouse"></label>
 <label>Agenda<textarea name="description" maxlength="5000" rows="3"></textarea></label>
-<button type="submit">Create meeting</button></form>
+<button type="submit">Create meeting</button></form></details>
 @endif</section>
 
 <section class="dashboard-panel"><h2>Business referrals</h2><p class="muted">Share a business opportunity privately with another member. Avoid including confidential customer information without permission.</p>
-<form id="new-referral"><label>Send to<select name="to_member_id" id="referral-recipient" required><option value="">Select a member</option></select></label>
+<details class="create-panel"><summary>+ Send a referral</summary><form id="new-referral"><label>Send to<select name="to_member_id" id="referral-recipient" required><option value="">Select a member</option></select></label>
 <label>Opportunity<input name="subject" maxlength="180" required></label>
 <label>Details<textarea name="details" maxlength="3000" rows="3"></textarea></label>
-<button type="submit">Send referral</button></form><div id="referrals">Loading referrals…</div></section>
+<button type="submit">Send referral</button></form></details><div id="referrals">Loading referrals…</div></section>
 <section class="dashboard-panel"><h2>Member asks &amp; offers</h2><p class="muted">Ask fellow owners for advice, resources or introductions—or share something your business can offer.</p>
-<form id="new-opportunity"><label>Post type<select name="type"><option value="ask">I need help with…</option><option value="offer">I can help with…</option></select></label>
+<details class="create-panel"><summary>+ Post an opportunity</summary><form id="new-opportunity"><label>Post type<select name="type"><option value="ask">I need help with…</option><option value="offer">I can help with…</option></select></label>
 <label>Headline<input name="title" maxlength="180" required></label><label>Details<textarea name="details" maxlength="3000" rows="3" required></textarea></label>
-<button type="submit">Post to NBTX Club</button></form>
+<button type="submit">Post to NBTX Club</button></form></details>
 <label>Show<select id="opportunity-filter"><option value="">All open posts</option><option value="ask">Requests</option><option value="offer">Offers</option></select></label>
 <div id="opportunities">Loading opportunities…</div></section>
 <section class="dashboard-panel"><h2>Member directory</h2><div id="directory">Loading members…</div></section>
 <section class="dashboard-panel"><h2>My business profile</h2>
-<form id="profile">
+<details class="create-panel"><summary>Edit business profile</summary><form id="profile">
 <label>Display name<input name="name" required value="{{ auth('board')->user()->name }}"></label>
 <label>Company<input name="company" value="{{ auth('board')->user()->company }}"></label>
 <label>Industry<input name="industry" value="{{ auth('board')->user()->industry }}"></label>
 <label>Title<input name="title" value="{{ auth('board')->user()->title }}"></label>
 <label>Website<input name="website" type="url" value="{{ auth('board')->user()->website }}"></label>
 <label>About me<textarea name="bio" rows="3">{{ auth('board')->user()->bio }}</textarea></label>
-<button type="submit">Save profile</button></form></section>
-<section class="dashboard-panel"><h2>Conversations</h2><form id="new-conversation"><label>Conversation type<select name="type" id="conversation-type"><option value="direct">Direct message</option><option value="group">Group chat</option></select></label><label>Members<select name="member_ids" id="conversation-members" multiple size="5" required></select></label><label>Group name (for group chats)<input name="name" maxlength="120" placeholder="Business owners discussion"></label><button type="submit">Start conversation</button></form><div id="conversations">Loading conversations…</div></section>
+<button type="submit">Save profile</button></form></details></section>
+<section class="dashboard-panel"><h2>Conversations</h2><details class="create-panel"><summary>+ Start a conversation</summary><form id="new-conversation"><label>Conversation type<select name="type" id="conversation-type"><option value="direct">Direct message</option><option value="group">Group chat</option></select></label><label>Members<select name="member_ids" id="conversation-members" multiple size="5" required></select></label><label>Group name (for group chats)<input name="name" maxlength="120" placeholder="Business owners discussion"></label><button type="submit">Start conversation</button></form></details><div id="conversations">Loading conversations…</div></section>
 <section class="dashboard-panel"><h2 id="conversation-title">Chat</h2><div class="messages" id="messages" aria-live="polite">Choose a conversation to view messages.</div>
 <form id="chat"><label>Message<textarea name="body" rows="2" maxlength="5000" required></textarea></label><button type="submit" id="send" disabled>Send</button></form></section>
 </div>
@@ -183,7 +190,7 @@ async function loadDirectory(){
  if(!data.data.length)root.textContent='No approved members yet.';
 }
 async function loadConversations(){
- const data=await api('/api/conversations');const root=document.getElementById('conversations');root.replaceChildren();
+ const data=await api('/api/conversations');const root=document.getElementById('conversations');root.replaceChildren();document.getElementById('stat-messages').textContent=data.data.reduce((sum,c)=>sum+(Number(c.unread_count)||0),0);
  for(const conversation of data.data){
  const button=el('button',(conversation.unread_count ? '● '+conversation.unread_count+' new · ' : '')+(conversation.name||('Conversation #'+conversation.id)),'item');
  button.onclick=()=>{selectedConversation=conversation.id;document.getElementById('conversation-title').textContent=conversation.name||'Direct message';document.getElementById('send').disabled=false;loadMessages().catch(showError)};
@@ -217,6 +224,11 @@ document.getElementById('chat').onsubmit=async event=>{
 };
 async function loadMeetings(){
  const data=await api('/api/meetings');const root=document.getElementById('board-meetings');root.replaceChildren();
+ const upcoming=data.data.filter(m=>new Date(m.starts_at).getTime()>=Date.now()).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
+ document.getElementById('stat-meetings').textContent=upcoming.length;
+ const preview=document.getElementById('next-meeting-preview');preview.replaceChildren();
+ if(upcoming.length){const next=upcoming[0];preview.append(el('strong',next.title),el('p',new Date(next.starts_at).toLocaleString()),el('p',next.location||'Location to be announced'));if(next.my_rsvp)preview.append(el('small','Your RSVP: '+next.my_rsvp));}
+ else preview.textContent='No upcoming meetings scheduled.';
  for(const meeting of data.data){
   const card=document.createElement('div');card.className='message';
   card.append(el('strong',meeting.title),el('div',new Date(meeting.starts_at).toLocaleString()+' – '+new Date(meeting.ends_at).toLocaleTimeString()),el('div',meeting.location||'Location to be announced'));
@@ -281,7 +293,7 @@ document.getElementById('test-board-push').addEventListener('click',async()=>{
 async function loadOpportunities(){
  const type=document.getElementById('opportunity-filter').value;
  const data=await api('/api/opportunities'+(type?'?type='+encodeURIComponent(type):''));
- const root=document.getElementById('opportunities');root.replaceChildren();
+ const root=document.getElementById('opportunities');root.replaceChildren();if(!type)document.getElementById('stat-opportunities').textContent=data.data.length;
  for(const item of data.data){
   const card=el('div','','message');
   card.append(el('strong',(item.type==='ask'?'REQUEST: ':'OFFER: ')+item.title));
@@ -303,7 +315,7 @@ document.getElementById('new-opportunity').onsubmit=async event=>{
 };
 
 async function loadReferrals(){
- const data=await api('/api/referrals');const root=document.getElementById('referrals');root.replaceChildren();
+ const data=await api('/api/referrals');const root=document.getElementById('referrals');root.replaceChildren();document.getElementById('stat-referrals').textContent=data.data.filter(r=>r.status==='new').length;
  for(const referral of data.data){
   const card=el('div',referral.subject+' · '+referral.status+' · '+referral.from_name+' → '+referral.to_name,'message');
   if(referral.details)card.append(el('p',referral.details));
@@ -342,6 +354,7 @@ async function openLinkedSection(){
   document.getElementById('board-meetings').scrollIntoView({behavior:'smooth',block:'start'});
  }
 }
+document.querySelectorAll('.quick-actions-list a[href^="#"]').forEach(link=>link.addEventListener('click',()=>{const target=document.querySelector(link.getAttribute('href'));if(target){const panel=target.closest('details');if(panel)panel.open=true;}}));
 Promise.all([loadDirectory(),loadConversations(),loadMeetings(),loadReferrals(),loadOpportunities(),loadPushPreferences(),loadPushTestStatus(),loadActivity()])
  .then(openLinkedSection).catch(showError);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)Promise.all([loadMessages(),loadActivity(),loadConversations()]).catch(showError)});
