@@ -39,6 +39,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 .member-spotlight{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:22px 26px;margin:0 0 24px;border:1px solid #53422c;border-radius:12px;background:linear-gradient(115deg,#242018,#191917)}.member-spotlight h2{font:24px Georgia,serif;margin:9px 0}.spotlight-details{display:flex;align-items:center;gap:20px;justify-content:space-between;min-width:40%}.spotlight-details strong{font-size:18px;color:#f3e4cd}.spotlight-details p{margin:6px 0}.spotlight-details small{color:#c6ac86}.spotlight-actions button{white-space:nowrap}.referral-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.referral-tabs button{padding:8px 13px;font-size:12px;border-radius:7px}.referral-tabs button[aria-pressed="true"]{background:#c5a16a;color:#17130e;border-color:#c5a16a}@media(max-width:750px){.member-spotlight,.spotlight-details{display:block}.spotlight-actions{margin-top:12px}}
 .directory-tools{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin:15px 0}.directory-tools label{font-size:12px;color:#d2b98e}.directory-tools input,.directory-tools select{margin-top:6px}.directory-cards{display:grid;gap:10px}.directory-member{display:flex;align-items:center;gap:12px;border:1px solid #493b2a;background:#24211d;border-radius:10px;padding:13px}.directory-avatar{width:43px;height:43px;flex:0 0 43px;border-radius:50%;background:#55432a;color:#f4e6d2;display:grid;place-items:center;font-weight:700;font-size:13px}.directory-info{flex:1;min-width:0}.directory-info strong{display:block;color:#f5e9d5}.directory-info p{margin:4px 0;font-size:13px}.directory-info small{display:block;color:#baa88f;font-size:11px}.directory-connect{padding:8px 11px;font-size:12px;white-space:nowrap}@media(max-width:700px){.directory-tools{grid-template-columns:1fr}.directory-member{flex-wrap:wrap}.directory-connect{margin-left:55px}}
 .referral-controls{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin:14px 0}.referral-controls label{font-size:12px;color:#c9b393}.referral-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.referral-summary-item{padding:10px;border:1px solid #53432d;border-radius:8px;background:#252019;text-align:center}.referral-summary-item strong{display:block;font-size:21px;color:#e6c38a}.referral-summary-item small{font-size:11px}.referral-card{padding:14px 0;border-bottom:1px solid #473a2a}.referral-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.referral-heading strong{color:#f2e5d1}.referral-status{border:1px solid #8a704b;border-radius:20px;padding:4px 9px;font-size:11px;text-transform:capitalize;color:#e6c38a}.referral-card p{white-space:pre-wrap;overflow-wrap:anywhere}.referral-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:12px}.referral-actions select{width:auto;max-width:180px}.referral-followup{font-size:12px;padding:9px 12px}@media(max-width:700px){.referral-controls{grid-template-columns:1fr}.referral-summary{grid-template-columns:repeat(2,1fr)}}
+.activity-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.activity-heading h2{margin:0}.activity-actions{display:flex;gap:7px;flex-wrap:wrap}.activity-actions button{padding:7px 11px;font-size:12px;background:#332b20;color:#e7d3b3;border:1px solid #58472e}.activity-actions button[aria-pressed="true"]{background:#c5a16a;color:#19140d}.activity-item{padding:13px 0;border-bottom:1px solid #493b2a}.activity-item-heading{display:flex;gap:9px;align-items:center}.activity-item-heading strong{color:#f0e3cf}.activity-new{border:1px solid #aa8650;border-radius:20px;padding:2px 7px;font-size:10px;color:#e5c18c}.activity-item p{margin:9px 0;white-space:pre-wrap;overflow-wrap:anywhere}.activity-item-actions{display:flex;gap:12px;align-items:center}.activity-item-actions a{color:#e3c98c;font-size:13px}.activity-item-actions button{padding:6px 10px;font-size:12px}
 </style>
 </head>
 <body>
@@ -71,7 +72,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <label><input type="checkbox" name="referrals" checked style="width:auto"> Business referrals</label>
 <button type="submit">Save notification preferences</button></form>
 <p id="push-status" class="muted" aria-live="polite"></p><p id="push-test-status" class="muted" aria-live="polite"></p></section></details>
-<section class="activity-panel"><h2>Recent activity <span id="activity-count"></span></h2><div id="board-activity">Loading updates…</div></section>
+<section class="activity-panel"><div class="activity-heading"><h2>Recent activity <span id="activity-count"></span></h2><div class="activity-actions"><button type="button" id="activity-all" aria-pressed="true">All</button><button type="button" id="activity-unread" aria-pressed="false">Unread</button><button type="button" id="activity-refresh">Refresh ↻</button></div></div><div id="board-activity">Loading updates…</div></section>
 <div class="layout dashboard-grid">
 <section class="dashboard-panel"><h2>Upcoming meetings</h2><div id="board-meetings">Loading meetings…</div>
 @if(in_array(auth('board')->user()->role, ['admin', 'super_admin'], true))
@@ -306,23 +307,42 @@ if(meetingForm)meetingForm.onsubmit=async event=>{
  try{await api('/api/meetings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...fields,starts_at:new Date(fields.starts_at).toISOString(),ends_at:new Date(fields.ends_at).toISOString()})});form.reset();notice.textContent='Meeting created.';await loadMeetings()}catch(error){showError(error)}
 };
 
-async function loadActivity(){
- const data=await api('/api/notifications');
+let activityItems=[];
+let activityFilter='all';
+function renderActivity(){
  const root=document.getElementById('board-activity');root.replaceChildren();
- document.getElementById('activity-count').textContent=data.unread_count?'('+data.unread_count+' new)':'';
- for(const item of data.items){
-  const card=el('div','','message');
-  card.append(el('strong',item.title+(item.read_at?'':' · New')));
+ const visible=activityItems.filter(item=>activityFilter==='all'||!item.read_at);
+ for(const item of visible){
+  const card=el('article','','activity-item');
+  const heading=el('div','','activity-item-heading');heading.append(el('strong',item.title));
+  if(!item.read_at)heading.append(el('span','New','activity-new'));
+  card.append(heading);
   if(item.body)card.append(el('p',item.body));
-  const link=document.createElement('a');link.href=item.url;link.textContent='View';link.style.color='#e3c98c';card.append(link);
+  const actions=el('div','','activity-item-actions');
+  if(item.url){const link=document.createElement('a');link.href=item.url;link.textContent='View details ↗';actions.append(link);}
   if(!item.read_at){
-   const button=document.createElement('button');button.type='button';button.textContent='Mark read';button.style.marginLeft='12px';
-   button.onclick=async()=>{try{await api('/api/notifications/'+item.id+'/read',{method:'PATCH'});await loadActivity()}catch(error){showError(error)}};
-   card.append(button);
+   const button=document.createElement('button');button.type='button';button.textContent='Mark read';
+   button.onclick=async()=>{button.disabled=true;try{await api('/api/notifications/'+item.id+'/read',{method:'PATCH'});await loadActivity()}catch(error){button.disabled=false;showError(error)}};
+   actions.append(button);
   }
-  root.append(card);
+  card.append(actions);root.append(card);
  }
- if(!data.items.length)root.textContent='No activity yet.';
+ if(!visible.length)root.textContent=activityFilter==='unread'?'You are all caught up — no unread updates.':'No activity yet.';
+}
+for(const [id,view] of [['activity-all','all'],['activity-unread','unread']]){
+ document.getElementById(id).addEventListener('click',()=>{
+  activityFilter=view;
+  document.getElementById('activity-all').setAttribute('aria-pressed',String(view==='all'));
+  document.getElementById('activity-unread').setAttribute('aria-pressed',String(view==='unread'));
+  renderActivity();
+ });
+}
+document.getElementById('activity-refresh').addEventListener('click',()=>loadActivity().catch(showError));
+async function loadActivity(){
+ const data=await api('/api/notifications');activityItems=data.items||[];
+ const unread=activityItems.filter(item=>!item.read_at).length;
+ document.getElementById('activity-count').textContent=(data.unread_count??unread)?'('+(data.unread_count??unread)+' new)':'';
+ renderActivity();
 }
 
 async function loadPushTestStatus(){
