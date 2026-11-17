@@ -293,7 +293,7 @@ document.getElementById('test-board-push').addEventListener('click',async()=>{
 async function loadOpportunities(){
  const type=document.getElementById('opportunity-filter').value;
  const data=await api('/api/opportunities'+(type?'?type='+encodeURIComponent(type):''));
- const root=document.getElementById('opportunities');root.replaceChildren();
+ const root=document.getElementById('opportunities');root.replaceChildren();if(!type)document.getElementById('stat-opportunities').textContent=data.data.length;
  for(const item of data.data){
   const card=el('div','','message');
   card.append(el('strong',(item.type==='ask'?'REQUEST: ':'OFFER: ')+item.title));
@@ -354,6 +354,7 @@ async function openLinkedSection(){
   document.getElementById('board-meetings').scrollIntoView({behavior:'smooth',block:'start'});
  }
 }
+document.querySelectorAll('.quick-actions-list a[href^="#"]').forEach(link=>link.addEventListener('click',()=>{const target=document.querySelector(link.getAttribute('href'));if(target){const panel=target.closest('details');if(panel)panel.open=true;}}));
 Promise.all([loadDirectory(),loadConversations(),loadMeetings(),loadReferrals(),loadOpportunities(),loadPushPreferences(),loadPushTestStatus(),loadActivity()])
  .then(openLinkedSection).catch(showError);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)Promise.all([loadMessages(),loadActivity(),loadConversations()]).catch(showError)});
