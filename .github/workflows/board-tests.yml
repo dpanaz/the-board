@@ -40,6 +40,8 @@ jobs:
             composer.lock
             composer-output.log
           retention-days: 7
+      - name: Prepare isolated Board environment
+        run: cp .env.example .env
       - name: Test Board only
         env:
           APP_ENV: testing
