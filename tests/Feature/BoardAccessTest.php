@@ -469,4 +469,29 @@ class BoardAccessTest extends TestCase
         $this->assertFileExists(public_path('board-sw.js'));
         $this->assertFileExists(public_path('board-icon.svg'));
     }
+
+    public function test_approved_member_can_create_group_chat_with_active_members(): void
+    {
+        $first = BoardMember::create(['name' => 'First', 'email' => 'group-first@example.test', 'password' => 'SecurePassword123!']);
+        $second = BoardMember::create(['name' => 'Second', 'email' => 'group-second@example.test', 'password' => 'SecurePassword123!']);
+        $first->forceFill(['status' => 'active'])->save();
+        $second->forceFill(['status' => 'active'])->save();
+
+        $this->actingAs($first, 'board')->postJson($this->boardUrl('/api/conversations'), [
+            'type' => 'group', 'name' => 'Local Owners', 'member_ids' => [$second->id],
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('board_conversations', ['name' => 'Local Owners', 'type' => 'group']);
+        $this->assertDatabaseCount('board_conversation_members', 2);
+    }
+
+    public function test_suspended_member_cannot_read_board_directory(): void
+    {
+        $member = BoardMember::create(['name' => 'Suspended', 'email' => 'suspended@example.test', 'password' => 'SecurePassword123!']);
+        $member->forceFill(['status' => 'suspended'])->save();
+
+        $this->actingAs($member, 'board')
+            ->getJson($this->boardUrl('/api/members'))
+            ->assertForbidden();
+    }
 }
