@@ -45,6 +45,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 .opportunity-controls{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin:10px 0}.opportunity-controls label{font-size:12px;color:#d5c2a4}.opportunity-controls input,.opportunity-controls select{margin-top:5px}@media(max-width:700px){.opportunity-controls{grid-template-columns:1fr}}
 .profile-readiness{padding:14px;border:1px solid #57472f;border-radius:10px;margin:12px 0;background:rgba(197,161,106,.06)}.profile-readiness-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.profile-readiness progress{display:block;width:100%;height:12px;accent-color:#c5a16a;margin-top:10px}.profile-readiness .muted{margin:9px 0 0;font-size:12px;line-height:1.5}
 .chat-message{margin:8px 0;overflow-wrap:anywhere}.chat-message small{display:block;color:#d1b783;font-size:11px;margin-bottom:5px}.chat-message p{margin:0;white-space:pre-wrap;line-height:1.5}.chat-message-own{border-left:3px solid #c5a16a;padding-left:12px;background:rgba(197,161,106,.06)}.chat-compose-footer{display:flex;justify-content:space-between;align-items:center;gap:12px}.chat-compose-footer small{color:#b7a88f;font-size:11px}
+.meeting-calendar-button{font-size:12px;padding:7px 10px;margin:8px 10px 8px 0;background:#3a3023;color:#e7cf9e;border:1px solid #7d633f}
 </style>
 </head>
 <body>
@@ -322,6 +323,15 @@ document.getElementById('chat').onsubmit=async event=>{
 let cachedMeetings=[];
 document.getElementById('meeting-view').addEventListener('change',renderMeetings);
 document.getElementById('meeting-search').addEventListener('input',renderMeetings);
+function meetingCalendarLink(meeting){
+ const utc=value=>{const d=new Date(value);return Number.isNaN(d.getTime())?'':d.toISOString().replace(/[-:]/g,'').replace(/\\.\\d{3}Z$/,'Z')};
+ const escapeText=value=>String(value||'').replace(/\\\\/g,'\\\\\\\\').replace(/\r?\n/g,'\\\\n').replace(/,/g,'\\\\,').replace(/;/g,'\\\\;');
+ const start=utc(meeting.starts_at),end=utc(meeting.ends_at);
+ if(!start||!end)return null;
+ const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//NBTX Club//Meetings//EN','BEGIN:VEVENT','UID:nbtx-meeting-'+meeting.id+'@nbtx.club','DTSTAMP:'+utc(new Date()),'DTSTART:'+start,'DTEND:'+end,'SUMMARY:'+escapeText(meeting.title),'LOCATION:'+escapeText(meeting.location),'DESCRIPTION:'+escapeText(meeting.description),'END:VEVENT','END:VCALENDAR'];
+ const blob=new Blob([lines.join('\\r\\n')+'\\r\\n'],{type:'text/calendar;charset=utf-8'});
+ return URL.createObjectURL(blob);
+}
 function renderMeetings(){
  const root=document.getElementById('board-meetings');root.replaceChildren();
  const view=document.getElementById('meeting-view').value;
@@ -338,6 +348,9 @@ function renderMeetings(){
   const card=document.createElement('div');card.className='message';
   card.append(el('strong',meeting.title),el('div',new Date(meeting.starts_at).toLocaleString()+' – '+new Date(meeting.ends_at).toLocaleTimeString()),el('div',meeting.location||'Location to be announced'));
   if(meeting.description)card.append(el('p',meeting.description));
+  const calendar=document.createElement('button');calendar.type='button';calendar.textContent='Add to calendar';calendar.className='meeting-calendar-button';
+  calendar.onclick=()=>{const url=meetingCalendarLink(meeting);if(!url){notice.textContent='Meeting dates are unavailable.';return;}const link=document.createElement('a');link.href=url;link.download='nbtx-club-meeting-'+meeting.id+'.ics';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+  card.append(calendar);
   card.append(el('small',meeting.attending_count+' attending'));
   const select=document.createElement('select');
   for(const [value,label] of [['','Your RSVP'],['going','Going'],['maybe','Maybe'],['declined','Cannot attend']]){
