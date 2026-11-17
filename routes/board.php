@@ -12,13 +12,14 @@ use App\Http\Middleware\EnsureApprovedBoardMember;
 use Illuminate\Support\Facades\Route;
 
 Route::domain(config('services.board.domain', 'theboard.clubhouseoncastell.com'))->name('board.')->group(function (): void {
+    Route::view('/', 'board.welcome')->name('welcome');
     Route::view('/login', 'board.login')->name('login')->middleware('guest:board');
     Route::post('/login', [BoardAccessController::class, 'login'])->middleware(['guest:board', 'throttle:5,1'])->name('login.submit');
     Route::view('/join', 'board.join')->name('join')->middleware('guest:board');
     Route::post('/join', [BoardAccessController::class, 'accept'])->middleware(['guest:board', 'throttle:5,1'])->name('join.submit');
 
     Route::middleware(['auth:board', EnsureApprovedBoardMember::class])->group(function (): void {
-        Route::view('/', 'board.home')->name('home');
+        Route::view('/home', 'board.home')->name('home');
         Route::get('/admin', function (\Illuminate\Http\Request $request) {
             abort_unless(in_array($request->user('board')->role, ['admin', 'super_admin'], true), 403);
             return view('board.admin');

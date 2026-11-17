@@ -50,7 +50,7 @@ class BoardAccessTest extends TestCase
         $this->assertSame('pending', $member->status);
 
         $this->actingAs($member, 'board')
-            ->get($this->boardUrl('/'))
+            ->get($this->boardUrl('/home'))
             ->assertForbidden();
     }
 
