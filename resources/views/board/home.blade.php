@@ -44,6 +44,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 .meeting-controls{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin:10px 0}.meeting-controls label{font-size:12px;color:#d5c2a4}.meeting-controls input,.meeting-controls select{margin-top:5px}@media(max-width:700px){.meeting-controls{grid-template-columns:1fr}}
 .opportunity-controls{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin:10px 0}.opportunity-controls label{font-size:12px;color:#d5c2a4}.opportunity-controls input,.opportunity-controls select{margin-top:5px}@media(max-width:700px){.opportunity-controls{grid-template-columns:1fr}}
 .profile-readiness{padding:14px;border:1px solid #57472f;border-radius:10px;margin:12px 0;background:rgba(197,161,106,.06)}.profile-readiness-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.profile-readiness progress{display:block;width:100%;height:12px;accent-color:#c5a16a;margin-top:10px}.profile-readiness .muted{margin:9px 0 0;font-size:12px;line-height:1.5}
+.chat-message{margin:8px 0;overflow-wrap:anywhere}.chat-message small{display:block;color:#d1b783;font-size:11px;margin-bottom:5px}.chat-message p{margin:0;white-space:pre-wrap;line-height:1.5}.chat-message-own{border-left:3px solid #c5a16a;padding-left:12px;background:rgba(197,161,106,.06)}.chat-compose-footer{display:flex;justify-content:space-between;align-items:center;gap:12px}.chat-compose-footer small{color:#b7a88f;font-size:11px}
 </style>
 </head>
 <body>
@@ -111,7 +112,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <button type="submit">Save profile</button></form></details></section>
 <section class="dashboard-panel"><h2>Conversations</h2><label class="conversation-search-label">Find conversation<input type="search" id="conversation-search" placeholder="Search conversations" autocomplete="off"></label><details class="create-panel"><summary>+ Start a conversation</summary><form id="new-conversation"><label>Conversation type<select name="type" id="conversation-type"><option value="direct">Direct message</option><option value="group">Group chat</option></select></label><label>Members<select name="member_ids" id="conversation-members" multiple size="5" required></select></label><label>Group name (for group chats)<input name="name" maxlength="120" placeholder="Business owners discussion"></label><button type="submit">Start conversation</button></form></details><div id="conversations">Loading conversations…</div></section>
 <section class="dashboard-panel"><h2 id="conversation-title">Chat</h2><div class="messages" id="messages" aria-live="polite">Choose a conversation to view messages.</div>
-<form id="chat"><label>Message<textarea name="body" rows="2" maxlength="5000" required></textarea></label><button type="submit" id="send" disabled>Send</button></form></section>
+<form id="chat"><label>Message<textarea name="body" rows="2" maxlength="5000" required placeholder="Write a message…"></textarea></label><div class="chat-compose-footer"><small id="chat-character-count">0 / 5000 characters</small><button type="submit" id="send" disabled>Send</button></div></form></section>
 </div>
 </main>
 <script>
@@ -275,7 +276,14 @@ async function loadMessages(){
  if(!selectedConversation)return;
  const id=selectedConversation;const data=await api('/api/conversations/'+id+'/messages');if(selectedConversation!==id)return;
  const root=document.getElementById('messages');root.replaceChildren();
- for(const message of data.data.reverse()){root.append(el('div','Member #'+message.sender_id+': '+message.body,'message'))}
+ for(const message of data.data.reverse()){
+  const own=Number(message.sender_id)==={{ auth('board')->id() }};
+  const card=el('div','','message chat-message'+(own?' chat-message-own':''));
+  const sender=directoryMembers.find(m=>Number(m.id)===Number(message.sender_id));
+  card.append(el('small',own?'You':sender?.name||'Member #'+message.sender_id));
+  card.append(el('p',message.body));root.append(card);
+ }
+ root.scrollTop=root.scrollHeight;
  if(!data.data.length)root.textContent='Start the conversation.';
  await loadConversations();
 }
@@ -301,10 +309,15 @@ document.getElementById('profile').onsubmit=async event=>{
  event.preventDefault();const form=new FormData(event.currentTarget);
  try{await api('/api/profile',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(form))});notice.textContent='Profile saved.';updateProfileReadiness();await loadDirectory()}catch(error){showError(error)}
 };
+const chatTextarea=document.querySelector('#chat textarea[name="body"]');
+const chatCount=document.getElementById('chat-character-count');
+chatTextarea.addEventListener('input',()=>{chatCount.textContent=chatTextarea.value.length+' / 5000 characters'});
+chatTextarea.addEventListener('keydown',event=>{if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();chatTextarea.form.requestSubmit()}});
 document.getElementById('chat').onsubmit=async event=>{
  event.preventDefault();if(!selectedConversation)return;
  const body=new FormData(event.currentTarget).get('body');
- try{await api('/api/conversations/'+selectedConversation+'/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({body})});event.currentTarget.reset();await loadMessages()}catch(error){showError(error)}
+ const send=document.getElementById('send');send.disabled=true;
+ try{await api('/api/conversations/'+selectedConversation+'/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({body})});event.currentTarget.reset();chatCount.textContent='0 / 5000 characters';await loadMessages()}catch(error){showError(error)}finally{send.disabled=!selectedConversation}
 };
 let cachedMeetings=[];
 document.getElementById('meeting-view').addEventListener('change',renderMeetings);
