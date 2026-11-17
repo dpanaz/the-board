@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Board | Sign in</title></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/board-icon.svg" type="image/svg+xml"><meta name="theme-color" content="#11171d"><title>The Board | Sign in</title></head>
 <body style="background:#15191e;color:#f4eee3;font-family:system-ui;max-width:440px;margin:12vh auto;padding:24px">
 <h1>THE BOARD</h1><p>A private Clubhouse community</p>
 @if(session('status'))<p role="status">{{ session('status') }}</p>@endif
