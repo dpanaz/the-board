@@ -101,7 +101,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <label>Headline<input name="title" maxlength="180" required></label><label>Details<textarea name="details" maxlength="3000" rows="3" required></textarea></label>
 <button type="submit">Post to NBTX Club</button></form></details>
 <div class="opportunity-controls"><label>Show<select id="opportunity-filter"><option value="">All open posts</option><option value="ask">Requests</option><option value="offer">Offers</option></select></label><label>Search posts<input type="search" id="opportunity-search" placeholder="Search members, businesses or details"></label><label>Sort<select id="opportunity-sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="title">Title A–Z</option></select></label></div><p id="opportunity-result-count" class="muted" role="status"></p><div id="opportunities">Loading opportunities…</div></section>
-<section class="dashboard-panel"><h2>Member directory</h2><div class="directory-tools"><label>Search members<input id="directory-search" type="search" placeholder="Search name, company, or industry" autocomplete="off"></label><label>Industry<select id="directory-industry"><option value="">All industries</option></select></label><label>Sort by<select id="directory-sort"><option value="name">Name A–Z</option><option value="company">Company A–Z</option></select></label></div><p id="directory-result-count" class="muted" role="status"></p><div id="directory" class="directory-cards">Loading members…</div></section>
+<section class="dashboard-panel"><h2>Member directory</h2><div class="directory-tools"><label>Search members<input id="directory-search" type="search" placeholder="Search name, company, or industry" autocomplete="off"></label><label>Industry<select id="directory-industry"><option value="">All industries</option></select></label><label>Sort by<select id="directory-sort"><option value="name">Name A–Z</option><option value="company">Company A–Z</option></select></label><label>Profile<select id="directory-profile-filter"><option value="all">All members</option><option value="complete">Complete profiles</option><option value="incomplete">Profiles needing details</option></select></label></div><p id="directory-result-count" class="muted" role="status"></p><div id="directory" class="directory-cards">Loading members…</div></section>
 <section class="dashboard-panel"><h2>My business profile</h2><div class="profile-readiness"><div class="profile-readiness-heading"><strong id="profile-readiness-score">Profile readiness</strong><span id="profile-readiness-count"></span></div><progress id="profile-readiness-progress" max="100" value="0"></progress><p class="muted" id="profile-readiness-hint">Complete your profile so other members can discover your business.</p></div>
 <details class="create-panel" id="profile-editor"><summary>Edit business profile</summary><form id="profile">
 <label>Display name<input name="name" required value="{{ auth('board')->user()->name }}"></label>
@@ -219,7 +219,9 @@ function renderDirectory(){
  const search=document.getElementById('directory-search').value.trim().toLowerCase();
  const industry=document.getElementById('directory-industry').value;
  const root=document.getElementById('directory');root.replaceChildren();
- const filtered=directoryMembers.filter(m=>(!industry||(m.industry||'')===industry)&&(!search||[m.name,m.company,m.industry,m.title,m.bio].some(v=>String(v||'').toLowerCase().includes(search))));const sort=document.getElementById('directory-sort').value;filtered.sort((a,b)=>String(a[sort]||a.name||'').localeCompare(String(b[sort]||b.name||'')));
+ const profileFilter=document.getElementById('directory-profile-filter').value;
+ const hasCompleteProfile=m=>['name','company','industry','title','website','bio'].every(key=>String(m[key]||'').trim());
+ const filtered=directoryMembers.filter(m=>(!industry||(m.industry||'')===industry)&&(profileFilter==='all'||(profileFilter==='complete'?hasCompleteProfile(m):!hasCompleteProfile(m)))&&(!search||[m.name,m.company,m.industry,m.title,m.bio].some(v=>String(v||'').toLowerCase().includes(search))));const sort=document.getElementById('directory-sort').value;filtered.sort((a,b)=>String(a[sort]||a.name||'').localeCompare(String(b[sort]||b.name||'')));
  document.getElementById('directory-result-count').textContent=filtered.length+' member'+(filtered.length===1?'':'s')+' found';
  for(const member of filtered){
   const card=el('article','','directory-member');
@@ -240,6 +242,7 @@ function renderDirectory(){
 document.getElementById('directory-search').addEventListener('input',renderDirectory);
 document.getElementById('directory-industry').addEventListener('change',renderDirectory);
 document.getElementById('directory-sort').addEventListener('change',renderDirectory);
+document.getElementById('directory-profile-filter').addEventListener('change',renderDirectory);
 async function loadDirectory(){
  const data=await api('/api/members');directoryMembers=data.data;showMemberSpotlight(data.data);
  const industrySelect=document.getElementById('directory-industry');const selected=industrySelect.value;
