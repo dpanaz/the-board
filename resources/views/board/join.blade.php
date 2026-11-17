@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Join The Board</title></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/board-icon.svg" type="image/svg+xml"><meta name="theme-color" content="#11171d"><title>Join The Board</title></head>
 <body style="background:#15191e;color:#f4eee3;font-family:system-ui;max-width:440px;margin:12vh auto;padding:24px">
 <h1>Join The Board</h1><p>Registration requires a valid invitation and administrator approval.</p>
 @if($errors->any())<p role="alert">{{ $errors->first() }}</p>@endif
