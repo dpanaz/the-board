@@ -100,7 +100,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <details class="create-panel"><summary>+ Post an opportunity</summary><form id="new-opportunity"><label>Post type<select name="type"><option value="ask">I need help with…</option><option value="offer">I can help with…</option></select></label>
 <label>Headline<input name="title" maxlength="180" required></label><label>Details<textarea name="details" maxlength="3000" rows="3" required></textarea></label>
 <button type="submit">Post to NBTX Club</button></form></details>
-<div class="opportunity-controls"><label>Show<select id="opportunity-filter"><option value="">All open posts</option><option value="ask">Requests</option><option value="offer">Offers</option></select></label><label>Search posts<input type="search" id="opportunity-search" placeholder="Search members, businesses or details"></label></div><p id="opportunity-result-count" class="muted" role="status"></p><div id="opportunities">Loading opportunities…</div></section>
+<div class="opportunity-controls"><label>Show<select id="opportunity-filter"><option value="">All open posts</option><option value="ask">Requests</option><option value="offer">Offers</option></select></label><label>Search posts<input type="search" id="opportunity-search" placeholder="Search members, businesses or details"></label><label>Sort<select id="opportunity-sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="title">Title A–Z</option></select></label></div><p id="opportunity-result-count" class="muted" role="status"></p><div id="opportunities">Loading opportunities…</div></section>
 <section class="dashboard-panel"><h2>Member directory</h2><div class="directory-tools"><label>Search members<input id="directory-search" type="search" placeholder="Search name, company, or industry" autocomplete="off"></label><label>Industry<select id="directory-industry"><option value="">All industries</option></select></label><label>Sort by<select id="directory-sort"><option value="name">Name A–Z</option><option value="company">Company A–Z</option></select></label></div><p id="directory-result-count" class="muted" role="status"></p><div id="directory" class="directory-cards">Loading members…</div></section>
 <section class="dashboard-panel"><h2>My business profile</h2><div class="profile-readiness"><div class="profile-readiness-heading"><strong id="profile-readiness-score">Profile readiness</strong><span id="profile-readiness-count"></span></div><progress id="profile-readiness-progress" max="100" value="0"></progress><p class="muted" id="profile-readiness-hint">Complete your profile so other members can discover your business.</p></div>
 <details class="create-panel" id="profile-editor"><summary>Edit business profile</summary><form id="profile">
@@ -435,6 +435,9 @@ function renderOpportunities(){
  const type=document.getElementById('opportunity-filter').value;
  const query=document.getElementById('opportunity-search').value.trim().toLowerCase();
  const visible=cachedOpportunities.filter(item=>(!type||item.type===type)&&(!query||[item.title,item.details,item.member_name,item.company].some(v=>String(v||'').toLowerCase().includes(query))));
+ const sort=document.getElementById('opportunity-sort').value;
+ if(sort==='title')visible.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||'')));
+ else visible.sort((a,b)=>{const timestamp=item=>Date.parse(item.created_at||'')||0;return sort==='oldest'?timestamp(a)-timestamp(b):timestamp(b)-timestamp(a)});
  const root=document.getElementById('opportunities');root.replaceChildren();
  document.getElementById('opportunity-result-count').textContent=visible.length+' open post'+(visible.length===1?'':'s')+' found';
  for(const item of visible){
@@ -456,6 +459,7 @@ function renderOpportunities(){
 }
 document.getElementById('opportunity-filter').addEventListener('change',renderOpportunities);
 document.getElementById('opportunity-search').addEventListener('input',renderOpportunities);
+document.getElementById('opportunity-sort').addEventListener('change',renderOpportunities);
 async function loadOpportunities(){
  const data=await api('/api/opportunities');cachedOpportunities=data.data;
  document.getElementById('stat-opportunities').textContent=data.data.length;
