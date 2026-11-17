@@ -1,0 +1,87 @@
+name: The Board standalone tests
+permissions:
+  contents: write
+on:
+  push:
+    branches: [main, feature/standalone-migration]
+  pull_request:
+jobs:
+  board:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: the_board_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql, dom, fileinfo, gmp, curl
+          coverage: none
+      - name: PHP syntax
+        run: find app bootstrap config database routes tests -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Validate dependency manifest
+        run: composer validate --no-check-publish --no-check-all --no-check-lock
+      - name: Install dependencies
+        run: |
+          set -o pipefail
+          if [ -f composer.lock ]; then
+            composer install --no-interaction --prefer-dist --no-progress 2>&1 | tee composer-output.log
+          else
+            composer update --no-interaction --prefer-dist --no-progress 2>&1 | tee composer-output.log
+          fi
+      - name: Commit resolved lockfile to migration branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/feature/standalone-migration'
+        run: |
+          if git ls-files --error-unmatch composer.lock >/dev/null 2>&1; then
+            echo 'Composer lockfile already tracked'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add composer.lock
+            git commit -m 'Lock standalone Board PHP dependencies [skip ci]'
+            git push origin HEAD:feature/standalone-migration
+          fi
+      - name: Save dependency lockfile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: board-composer-lock
+          path: |
+            composer.lock
+            composer-output.log
+          retention-days: 7
+      - name: Prepare isolated Board environment
+        run: cp .env.example .env
+      - name: Test Board only
+        env:
+          APP_ENV: testing
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: the_board_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+          SESSION_DRIVER: array
+          CACHE_STORE: array
+        run: |
+          set -o pipefail
+          php artisan test tests/Feature/BoardAccessTest.php --display-warnings --fail-on-warning 2>&1 | tee board-test-output.log
+      - name: Preserve Board test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: board-test-output
+          path: board-test-output.log
+          if-no-files-found: ignore
+          retention-days: 7

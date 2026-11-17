@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "The Board",
+  "short_name": "The Board",
+  "description": "Private business owner community",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#11171d",
+  "theme_color": "#11171d",
+  "icons": [
+    {
+      "src": "/board-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
