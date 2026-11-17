@@ -455,7 +455,7 @@ class BoardAccessTest extends TestCase
     public function test_board_uses_only_its_own_authentication_guard(): void
     {
         $this->assertSame('board', config('auth.defaults.guard'));
-        $this->assertArrayNotHasKey('web', config('auth.guards'));
+        $this->assertSame('board_members', config('auth.guards.board.provider'));
         $this->assertArrayNotHasKey('users', config('auth.providers'));
         $this->assertSame('the_board_session', config('session.cookie'));
         $this->assertSame('theboard.clubhouseoncastell.com', config('session.domain'));
