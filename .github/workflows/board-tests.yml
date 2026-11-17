@@ -27,6 +27,8 @@ jobs:
           coverage: none
       - name: PHP syntax
         run: find app bootstrap config database routes tests -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Validate dependency manifest
+        run: composer validate --no-check-publish --no-check-all --no-check-lock
       - name: Install dependencies
         run: |
           set -o pipefail
