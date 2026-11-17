@@ -34,7 +34,11 @@ jobs:
       - name: Install dependencies
         run: |
           set -o pipefail
-          composer update --no-interaction --prefer-dist --no-progress 2>&1 | tee composer-output.log
+          if [ -f composer.lock ]; then
+            composer install --no-interaction --prefer-dist --no-progress 2>&1 | tee composer-output.log
+          else
+            composer update --no-interaction --prefer-dist --no-progress 2>&1 | tee composer-output.log
+          fi
       - name: Commit resolved lockfile to migration branch
         if: github.event_name == 'push' && github.ref == 'refs/heads/feature/standalone-migration'
         run: |
