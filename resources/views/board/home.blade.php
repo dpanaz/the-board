@@ -38,6 +38,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 @media(max-width:1100px){.overview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.overview-top{grid-template-columns:1fr}.overview-stats{gap:10px}.stat-card{padding:15px}.stat-card strong{font-size:29px}.quick-actions-list{grid-template-columns:1fr 1fr}}
 .member-spotlight{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:22px 26px;margin:0 0 24px;border:1px solid #53422c;border-radius:12px;background:linear-gradient(115deg,#242018,#191917)}.member-spotlight h2{font:24px Georgia,serif;margin:9px 0}.spotlight-details{display:flex;align-items:center;gap:20px;justify-content:space-between;min-width:40%}.spotlight-details strong{font-size:18px;color:#f3e4cd}.spotlight-details p{margin:6px 0}.spotlight-details small{color:#c6ac86}.spotlight-actions button{white-space:nowrap}.referral-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.referral-tabs button{padding:8px 13px;font-size:12px;border-radius:7px}.referral-tabs button[aria-pressed="true"]{background:#c5a16a;color:#17130e;border-color:#c5a16a}@media(max-width:750px){.member-spotlight,.spotlight-details{display:block}.spotlight-actions{margin-top:12px}}
 .directory-tools{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin:15px 0}.directory-tools label{font-size:12px;color:#d2b98e}.directory-tools input,.directory-tools select{margin-top:6px}.directory-cards{display:grid;gap:10px}.directory-member{display:flex;align-items:center;gap:12px;border:1px solid #493b2a;background:#24211d;border-radius:10px;padding:13px}.directory-avatar{width:43px;height:43px;flex:0 0 43px;border-radius:50%;background:#55432a;color:#f4e6d2;display:grid;place-items:center;font-weight:700;font-size:13px}.directory-info{flex:1;min-width:0}.directory-info strong{display:block;color:#f5e9d5}.directory-info p{margin:4px 0;font-size:13px}.directory-info small{display:block;color:#baa88f;font-size:11px}.directory-connect{padding:8px 11px;font-size:12px;white-space:nowrap}@media(max-width:700px){.directory-tools{grid-template-columns:1fr}.directory-member{flex-wrap:wrap}.directory-connect{margin-left:55px}}
+.referral-controls{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin:14px 0}.referral-controls label{font-size:12px;color:#c9b393}.referral-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.referral-summary-item{padding:10px;border:1px solid #53432d;border-radius:8px;background:#252019;text-align:center}.referral-summary-item strong{display:block;font-size:21px;color:#e6c38a}.referral-summary-item small{font-size:11px}.referral-card{padding:14px 0;border-bottom:1px solid #473a2a}.referral-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.referral-heading strong{color:#f2e5d1}.referral-status{border:1px solid #8a704b;border-radius:20px;padding:4px 9px;font-size:11px;text-transform:capitalize;color:#e6c38a}.referral-card p{white-space:pre-wrap;overflow-wrap:anywhere}.referral-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:12px}.referral-actions select{width:auto;max-width:180px}.referral-followup{font-size:12px;padding:9px 12px}@media(max-width:700px){.referral-controls{grid-template-columns:1fr}.referral-summary{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -87,7 +88,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <details class="create-panel"><summary>+ Send a referral</summary><form id="new-referral"><label>Send to<select name="to_member_id" id="referral-recipient" required><option value="">Select a member</option></select></label>
 <label>Opportunity<input name="subject" maxlength="180" required></label>
 <label>Details<textarea name="details" maxlength="3000" rows="3"></textarea></label>
-<button type="submit">Send referral</button></form></details><div class="referral-tabs" role="group" aria-label="Filter referrals"><button type="button" data-referral-view="all" aria-pressed="true">All</button><button type="button" data-referral-view="received" aria-pressed="false">Received</button><button type="button" data-referral-view="sent" aria-pressed="false">Sent</button></div><div id="referrals">Loading referrals…</div></section>
+<button type="submit">Send referral</button></form></details><div class="referral-tabs" role="group" aria-label="Filter referrals"><button type="button" data-referral-view="all" aria-pressed="true">All</button><button type="button" data-referral-view="received" aria-pressed="false">Received</button><button type="button" data-referral-view="sent" aria-pressed="false">Sent</button></div><div class="referral-controls"><label>Status<select id="referral-status-filter"><option value="">All statuses</option><option value="new">New</option><option value="accepted">Accepted</option><option value="completed">Completed</option><option value="declined">Declined</option></select></label><label>Find a referral<input id="referral-search" type="search" placeholder="Search subject or member"></label></div><div id="referral-summary" class="referral-summary" aria-live="polite"></div><div id="referrals">Loading referrals…</div></section>
 <section class="dashboard-panel"><h2>Member asks &amp; offers</h2><p class="muted">Ask fellow owners for advice, resources or introductions—or share something your business can offer.</p>
 <details class="create-panel"><summary>+ Post an opportunity</summary><form id="new-opportunity"><label>Post type<select name="type"><option value="ask">I need help with…</option><option value="offer">I can help with…</option></select></label>
 <label>Headline<input name="title" maxlength="180" required></label><label>Details<textarea name="details" maxlength="3000" rows="3" required></textarea></label>
@@ -373,23 +374,46 @@ let referralView='all';
 document.querySelectorAll('[data-referral-view]').forEach(button=>button.addEventListener('click',()=>{
  referralView=button.dataset.referralView;
  document.querySelectorAll('[data-referral-view]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
- loadReferrals().catch(showError);
+ renderReferrals();
 }));
-async function loadReferrals(){
- const data=await api('/api/referrals');const root=document.getElementById('referrals');root.replaceChildren();document.getElementById('stat-referrals').textContent=data.data.filter(r=>r.status==='new').length;
- for(const referral of data.data.filter(r=>referralView==='all'||(referralView==='received'?r.to_member_id==={{ auth('board')->id() }}:r.from_member_id==={{ auth('board')->id() }}))){
-  const card=el('div',referral.subject+' · '+referral.status+' · '+referral.from_name+' → '+referral.to_name,'message');
+let cachedReferrals=[];
+function renderReferrals(){
+ const root=document.getElementById('referrals');root.replaceChildren();
+ const status=document.getElementById('referral-status-filter').value;
+ const search=document.getElementById('referral-search').value.trim().toLowerCase();
+ const own={{ auth('board')->id() }};
+ const visible=cachedReferrals.filter(r=>(referralView==='all'||(referralView==='received'?Number(r.to_member_id)===own:Number(r.from_member_id)===own))&&(!status||r.status===status)&&(!search||[r.subject,r.details,r.from_name,r.to_name].some(v=>String(v||'').toLowerCase().includes(search))));
+ const summary=document.getElementById('referral-summary');summary.replaceChildren();
+ for(const [label,count] of [['Total',visible.length],['New',visible.filter(r=>r.status==='new').length],['Accepted',visible.filter(r=>r.status==='accepted').length],['Completed',visible.filter(r=>r.status==='completed').length]]){
+  const stat=el('div','','referral-summary-item');stat.append(el('strong',String(count)),el('small',label));summary.append(stat);
+ }
+ for(const referral of visible){
+  const card=el('article','','referral-card');
+  const heading=el('div','','referral-heading');heading.append(el('strong',referral.subject),el('span',referral.status,'referral-status'));
+  card.append(heading,el('small',referral.from_name+' → '+referral.to_name));
   if(referral.details)card.append(el('p',referral.details));
-  if(referral.to_member_id==={{ auth('board')->id() }}){
-   const select=document.createElement('select');
+  const actions=el('div','','referral-actions');
+  if(Number(referral.to_member_id)===own){
+   const select=document.createElement('select');select.setAttribute('aria-label','Update referral status');
    for(const [value,label] of [['','Update status'],['accepted','Accepted'],['completed','Completed'],['declined','Declined']])select.append(new Option(label,value));
    select.value=referral.status==='new'?'':referral.status;
-   select.onchange=async()=>{if(!select.value)return;try{await api('/api/referrals/'+referral.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:select.value})});await loadReferrals()}catch(error){showError(error)}};
-   card.append(select);
+   select.onchange=async()=>{if(!select.value)return;try{await api('/api/referrals/'+referral.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:select.value})});await loadReferrals();notice.textContent='Referral status updated.'}catch(error){showError(error)}};
+   actions.append(select);
   }
+  const otherId=Number(referral.to_member_id)===own?Number(referral.from_member_id):Number(referral.to_member_id);
+  const member=directoryMembers.find(m=>Number(m.id)===otherId);
+  if(member){const followup=el('button','Message member','referral-followup');followup.type='button';followup.onclick=()=>startMemberConversation(member);actions.append(followup);}
+  if(actions.childNodes.length)card.append(actions);
   root.append(card);
  }
- if(!data.data.length)root.textContent='No referrals yet.';
+ if(!visible.length)root.textContent='No referrals match these filters.';
+}
+document.getElementById('referral-status-filter').addEventListener('change',renderReferrals);
+document.getElementById('referral-search').addEventListener('input',renderReferrals);
+async function loadReferrals(){
+ const data=await api('/api/referrals');cachedReferrals=data.data;
+ document.getElementById('stat-referrals').textContent=data.data.filter(r=>r.status==='new').length;
+ renderReferrals();
 }
 document.getElementById('new-referral').onsubmit=async event=>{
  event.preventDefault();const form=event.currentTarget;const fields=Object.fromEntries(new FormData(form));
