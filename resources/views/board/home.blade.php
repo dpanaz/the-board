@@ -43,6 +43,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 .directory-tools{grid-template-columns:2fr 1fr 1fr}.directory-bio{font-size:12px;line-height:1.5;color:#c5b9a7;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:normal}.directory-website{display:inline-block;color:#e6c38a;font-size:12px;margin-top:7px}.conversation-search-label{font-size:12px;color:#d0b68c}.conversation-search-label input{margin-top:6px}.item[aria-pressed="true"]{outline:2px solid #c5a16a}@media(max-width:700px){.directory-tools{grid-template-columns:1fr}}
 .meeting-controls{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin:10px 0}.meeting-controls label{font-size:12px;color:#d5c2a4}.meeting-controls input,.meeting-controls select{margin-top:5px}@media(max-width:700px){.meeting-controls{grid-template-columns:1fr}}
 .opportunity-controls{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin:10px 0}.opportunity-controls label{font-size:12px;color:#d5c2a4}.opportunity-controls input,.opportunity-controls select{margin-top:5px}@media(max-width:700px){.opportunity-controls{grid-template-columns:1fr}}
+.profile-readiness{padding:14px;border:1px solid #57472f;border-radius:10px;margin:12px 0;background:rgba(197,161,106,.06)}.profile-readiness-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.profile-readiness progress{display:block;width:100%;height:12px;accent-color:#c5a16a;margin-top:10px}.profile-readiness .muted{margin:9px 0 0;font-size:12px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -99,8 +100,8 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <button type="submit">Post to NBTX Club</button></form></details>
 <div class="opportunity-controls"><label>Show<select id="opportunity-filter"><option value="">All open posts</option><option value="ask">Requests</option><option value="offer">Offers</option></select></label><label>Search posts<input type="search" id="opportunity-search" placeholder="Search members, businesses or details"></label></div><p id="opportunity-result-count" class="muted" role="status"></p><div id="opportunities">Loading opportunities…</div></section>
 <section class="dashboard-panel"><h2>Member directory</h2><div class="directory-tools"><label>Search members<input id="directory-search" type="search" placeholder="Search name, company, or industry" autocomplete="off"></label><label>Industry<select id="directory-industry"><option value="">All industries</option></select></label><label>Sort by<select id="directory-sort"><option value="name">Name A–Z</option><option value="company">Company A–Z</option></select></label></div><p id="directory-result-count" class="muted" role="status"></p><div id="directory" class="directory-cards">Loading members…</div></section>
-<section class="dashboard-panel"><h2>My business profile</h2>
-<details class="create-panel"><summary>Edit business profile</summary><form id="profile">
+<section class="dashboard-panel"><h2>My business profile</h2><div class="profile-readiness"><div class="profile-readiness-heading"><strong id="profile-readiness-score">Profile readiness</strong><span id="profile-readiness-count"></span></div><progress id="profile-readiness-progress" max="100" value="0"></progress><p class="muted" id="profile-readiness-hint">Complete your profile so other members can discover your business.</p></div>
+<details class="create-panel" id="profile-editor"><summary>Edit business profile</summary><form id="profile">
 <label>Display name<input name="name" required value="{{ auth('board')->user()->name }}"></label>
 <label>Company<input name="company" value="{{ auth('board')->user()->company }}"></label>
 <label>Industry<input name="industry" value="{{ auth('board')->user()->industry }}"></label>
@@ -285,9 +286,20 @@ document.getElementById('new-conversation').onsubmit=async event=>{
  try{const created=await api('/api/conversations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,name:form.elements.name.value,member_ids})});
  form.reset();await loadConversations();selectedConversation=created.id;document.getElementById('send').disabled=false;await loadMessages();notice.textContent='Conversation created.'}catch(error){showError(error)}
 };
+function updateProfileReadiness(){
+ const form=document.getElementById('profile');
+ const fields=[['name','display name'],['company','company'],['industry','industry'],['title','role or title'],['website','website'],['bio','business description']];
+ const missing=fields.filter(([key])=>!String(form.elements.namedItem(key)?.value||'').trim());
+ const complete=fields.length-missing.length;const score=Math.round(complete/fields.length*100);
+ document.getElementById('profile-readiness-progress').value=score;
+ document.getElementById('profile-readiness-count').textContent=score+'% complete';
+ document.getElementById('profile-readiness-hint').textContent=missing.length?'Add '+missing.map(([,label])=>label).join(', ')+' to help members get to know your business.':'Your profile is complete and ready for other members to discover.';
+}
+document.getElementById('profile').addEventListener('input',updateProfileReadiness);
+updateProfileReadiness();
 document.getElementById('profile').onsubmit=async event=>{
  event.preventDefault();const form=new FormData(event.currentTarget);
- try{await api('/api/profile',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(form))});notice.textContent='Profile saved.';await loadDirectory()}catch(error){showError(error)}
+ try{await api('/api/profile',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(form))});notice.textContent='Profile saved.';updateProfileReadiness();await loadDirectory()}catch(error){showError(error)}
 };
 document.getElementById('chat').onsubmit=async event=>{
  event.preventDefault();if(!selectedConversation)return;
