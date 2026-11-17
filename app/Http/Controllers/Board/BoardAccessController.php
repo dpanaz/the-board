@@ -62,6 +62,7 @@ class BoardAccessController extends Controller
     public function logout(Request $request): RedirectResponse
     {
         Auth::guard('board')->logout();
+        $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect()->route('board.login');
