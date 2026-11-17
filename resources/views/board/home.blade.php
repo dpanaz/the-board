@@ -94,7 +94,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <details class="create-panel"><summary>+ Send a referral</summary><form id="new-referral"><label>Send to<select name="to_member_id" id="referral-recipient" required><option value="">Select a member</option></select></label>
 <label>Opportunity<input name="subject" maxlength="180" required></label>
 <label>Details<textarea name="details" maxlength="3000" rows="3"></textarea></label>
-<button type="submit">Send referral</button></form></details><div class="referral-tabs" role="group" aria-label="Filter referrals"><button type="button" data-referral-view="all" aria-pressed="true">All</button><button type="button" data-referral-view="received" aria-pressed="false">Received</button><button type="button" data-referral-view="sent" aria-pressed="false">Sent</button></div><div class="referral-controls"><label>Status<select id="referral-status-filter"><option value="">All statuses</option><option value="new">New</option><option value="accepted">Accepted</option><option value="completed">Completed</option><option value="declined">Declined</option></select></label><label>Find a referral<input id="referral-search" type="search" placeholder="Search subject or member"></label></div><div id="referral-summary" class="referral-summary" aria-live="polite"></div><div id="referrals">Loading referrals…</div></section>
+<button type="submit">Send referral</button></form></details><div class="referral-tabs" role="group" aria-label="Filter referrals"><button type="button" data-referral-view="all" aria-pressed="true">All</button><button type="button" data-referral-view="received" aria-pressed="false">Received</button><button type="button" data-referral-view="sent" aria-pressed="false">Sent</button></div><div class="referral-controls"><label>Status<select id="referral-status-filter"><option value="">All statuses</option><option value="new">New</option><option value="accepted">Accepted</option><option value="completed">Completed</option><option value="declined">Declined</option></select></label><label>Find a referral<input id="referral-search" type="search" placeholder="Search subject or member"></label><label>Sort<select id="referral-sort"><option value="recent">Newest first</option><option value="oldest">Oldest first</option><option value="subject">Subject A–Z</option></select></label></div><div id="referral-summary" class="referral-summary" aria-live="polite"></div><div id="referrals">Loading referrals…</div></section>
 <section class="dashboard-panel"><h2>Member asks &amp; offers</h2><p class="muted">Ask fellow owners for advice, resources or introductions—or share something your business can offer.</p>
 <details class="create-panel"><summary>+ Post an opportunity</summary><form id="new-opportunity"><label>Post type<select name="type"><option value="ask">I need help with…</option><option value="offer">I can help with…</option></select></label>
 <label>Headline<input name="title" maxlength="180" required></label><label>Details<textarea name="details" maxlength="3000" rows="3" required></textarea></label>
@@ -466,8 +466,11 @@ function renderReferrals(){
  const search=document.getElementById('referral-search').value.trim().toLowerCase();
  const own={{ auth('board')->id() }};
  const visible=cachedReferrals.filter(r=>(referralView==='all'||(referralView==='received'?Number(r.to_member_id)===own:Number(r.from_member_id)===own))&&(!status||r.status===status)&&(!search||[r.subject,r.details,r.from_name,r.to_name].some(v=>String(v||'').toLowerCase().includes(search))));
+ const sort=document.getElementById('referral-sort').value;
+ if(sort==='subject')visible.sort((a,b)=>String(a.subject||'').localeCompare(String(b.subject||'')));
+ else visible.sort((a,b)=>{const time=r=>Date.parse(r.created_at||'')||0;return sort==='oldest'?time(a)-time(b):time(b)-time(a)});
  const summary=document.getElementById('referral-summary');summary.replaceChildren();
- for(const [label,count] of [['Total',visible.length],['New',visible.filter(r=>r.status==='new').length],['Accepted',visible.filter(r=>r.status==='accepted').length],['Completed',visible.filter(r=>r.status==='completed').length]]){
+ for(const [label,count] of [['Total',visible.length],['New',visible.filter(r=>r.status==='new').length],['Accepted',visible.filter(r=>r.status==='accepted').length],['Completed',visible.filter(r=>r.status==='completed').length],['Declined',visible.filter(r=>r.status==='declined').length]]){
   const stat=el('div','','referral-summary-item');stat.append(el('strong',String(count)),el('small',label));summary.append(stat);
  }
  for(const referral of visible){
@@ -493,6 +496,7 @@ function renderReferrals(){
 }
 document.getElementById('referral-status-filter').addEventListener('change',renderReferrals);
 document.getElementById('referral-search').addEventListener('input',renderReferrals);
+document.getElementById('referral-sort').addEventListener('change',renderReferrals);
 async function loadReferrals(){
  const data=await api('/api/referrals');cachedReferrals=data.data;
  document.getElementById('stat-referrals').textContent=data.data.filter(r=>r.status==='new').length;
