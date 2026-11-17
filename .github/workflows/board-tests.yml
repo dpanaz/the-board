@@ -1,4 +1,6 @@
 name: The Board standalone tests
+permissions:
+  contents: write
 on:
   push:
     branches: [main, feature/standalone-migration]
@@ -33,6 +35,18 @@ jobs:
         run: |
           set -o pipefail
           composer update --no-interaction --prefer-dist --no-progress 2>&1 | tee composer-output.log
+      - name: Commit resolved lockfile to migration branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/feature/standalone-migration'
+        run: |
+          if git ls-files --error-unmatch composer.lock >/dev/null 2>&1; then
+            echo 'Composer lockfile already tracked'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add composer.lock
+            git commit -m 'Lock standalone Board PHP dependencies [skip ci]'
+            git push origin HEAD:feature/standalone-migration
+          fi
       - name: Save dependency lockfile
         if: always()
         uses: actions/upload-artifact@v4
