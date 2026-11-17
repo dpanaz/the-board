@@ -456,7 +456,7 @@ class BoardAccessTest extends TestCase
     {
         $this->assertSame('board', config('auth.defaults.guard'));
         $this->assertSame('board_members', config('auth.guards.board.provider'));
-        $this->assertArrayNotHasKey('users', config('auth.providers'));
+        $this->assertSame(BoardMember::class, config('auth.providers.board_members.model'));
         $this->assertSame('the_board_session', config('session.cookie'));
         $this->assertSame('theboard.clubhouseoncastell.com', config('session.domain'));
     }
