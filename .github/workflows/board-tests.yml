@@ -1,0 +1,51 @@
+name: The Board standalone tests
+on:
+  push:
+    branches: [main, feature/standalone-migration]
+  pull_request:
+jobs:
+  board:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: the_board_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql, dom, fileinfo, gmp, curl
+          coverage: none
+      - name: PHP syntax
+        run: find app bootstrap config database routes tests -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Install dependencies
+        run: composer update --no-interaction --prefer-dist --no-progress
+      - name: Save dependency lockfile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: board-composer-lock
+          path: composer.lock
+          retention-days: 7
+      - name: Test Board only
+        env:
+          APP_ENV: testing
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: the_board_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+          SESSION_DRIVER: array
+          CACHE_STORE: array
+        run: php artisan test tests/Feature/BoardAccessTest.php
