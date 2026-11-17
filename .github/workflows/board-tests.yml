@@ -28,13 +28,17 @@ jobs:
       - name: PHP syntax
         run: find app bootstrap config database routes tests -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Install dependencies
-        run: composer update --no-interaction --prefer-dist --no-progress
+        run: |
+          set -o pipefail
+          composer update --no-interaction --prefer-dist --no-progress 2>&1 | tee composer-output.log
       - name: Save dependency lockfile
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: board-composer-lock
-          path: composer.lock
+          path: |
+            composer.lock
+            composer-output.log
           retention-days: 7
       - name: Test Board only
         env:
@@ -48,4 +52,14 @@ jobs:
           DB_PASSWORD: root
           SESSION_DRIVER: array
           CACHE_STORE: array
-        run: php artisan test tests/Feature/BoardAccessTest.php
+        run: |
+          set -o pipefail
+          php artisan test tests/Feature/BoardAccessTest.php 2>&1 | tee board-test-output.log
+      - name: Preserve Board test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: board-test-output
+          path: board-test-output.log
+          if-no-files-found: ignore
+          retention-days: 7
