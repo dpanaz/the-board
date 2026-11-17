@@ -15,6 +15,15 @@ The Board will use the **same hosting provider as The Clubhouse**, but must be p
 - [ ] Cron for `php artisan schedule:run` every minute, in the **Board service only**.
 - [ ] Enable backups, error monitoring, rate limiting and HTTPS-only cookies.
 
+## Laravel Cloud environment settings
+Create a **new application** in Laravel Cloud, select GitHub repository `dpanaz/the-board`, and use the `feature/standalone-migration` branch for initial validation. Select PHP 8.4 and attach a **new Laravel MySQL database** (not the Clubhouse database). Laravel Cloud injects database credentials and the application key; do not copy those from Clubhouse.
+
+For the initial `*.laravel.cloud` environment, set `APP_URL=https://<assigned-preview-host>`, `BOARD_DOMAIN=<assigned-preview-host>`, and `SESSION_DOMAIN=<assigned-preview-host>`. These must all match the **actual preview hostname** because Board routes are hostname-restricted. Set `SESSION_COOKIE=the_board_session`, `SESSION_SECURE_COOKIE=true`, `APP_DEBUG=false`, `CACHE_STORE=file`, `SESSION_DRIVER=file`, and `QUEUE_CONNECTION=sync`. The Laravel Cloud build command is `composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader` (there is no Node asset build). Deploy command: `php artisan migrate --force`.
+
+After production DNS and TLS are ready, update all three URL/domain settings to `theboard.clubhouseoncastell.com`, deploy the approved main branch, and verify cookies and invitation links. Configure mail transport and VAPID secrets separately; no Clubhouse secrets are reused.
+
+Laravel Cloud runs Laravel scheduled tasks natively; check the environment's scheduled-task configuration and verify `routes/console.php` executes. Do not add a Clubhouse cron job.
+
 ## Deployment sequence
 1. Commit the generated and reviewed `composer.lock` from a clean Composer resolution; then deploy using `composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader`. Never run `composer update` during production deployment.
 2. Configure environment variables and ensure application points **only** to the Board database.
