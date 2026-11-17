@@ -37,6 +37,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 .overview-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}.stat-card{display:flex;flex-direction:column;gap:9px;background:#1d1b18;border:1px solid #403629;border-radius:12px;padding:22px;text-decoration:none;color:#f5eee1}.stat-card:hover{border-color:#d8b477}.stat-card span{font-size:13px;color:#cfc2b0}.stat-card strong{font:36px Georgia,serif;color:#e6c38a}.stat-card small{font-size:11px;color:#b8a58b}.overview-top{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;margin-bottom:30px}.overview-top section{background:#1b1a17;border:1px solid #403629;border-radius:12px;padding:23px}.overview-top h2{margin:10px 0 17px;font:23px Georgia,serif}.next-meeting-card #next-meeting-preview strong{display:block;font-size:17px;color:#f4e9d7}.next-meeting-card #next-meeting-preview p{margin:8px 0;font-size:13px}.overview-action{display:inline-block;margin-top:15px;color:#e2c18a;text-decoration:none;font-size:13px}.quick-actions-list{display:grid;grid-template-columns:1fr 1fr;gap:9px}.quick-actions-list a{border:1px solid #51412c;border-radius:8px;padding:12px;color:#e8d5b7;text-decoration:none;font-size:13px}.quick-actions-list a:hover{background:#33281b}.create-panel{margin:15px 0;border:1px solid #4d3c29;border-radius:8px;padding:0 12px}.create-panel summary{cursor:pointer;color:#e6c38a;font-size:13px;font-weight:600;padding:13px 0}.create-panel form{padding:5px 0 16px}.dashboard-grid{scroll-margin-top:90px}#board-meetings,#referrals,#opportunities,#directory,#conversations{scroll-margin-top:100px}
 @media(max-width:1100px){.overview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.overview-top{grid-template-columns:1fr}.overview-stats{gap:10px}.stat-card{padding:15px}.stat-card strong{font-size:29px}.quick-actions-list{grid-template-columns:1fr 1fr}}
 .member-spotlight{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:22px 26px;margin:0 0 24px;border:1px solid #53422c;border-radius:12px;background:linear-gradient(115deg,#242018,#191917)}.member-spotlight h2{font:24px Georgia,serif;margin:9px 0}.spotlight-details{display:flex;align-items:center;gap:20px;justify-content:space-between;min-width:40%}.spotlight-details strong{font-size:18px;color:#f3e4cd}.spotlight-details p{margin:6px 0}.spotlight-details small{color:#c6ac86}.spotlight-actions button{white-space:nowrap}.referral-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.referral-tabs button{padding:8px 13px;font-size:12px;border-radius:7px}.referral-tabs button[aria-pressed="true"]{background:#c5a16a;color:#17130e;border-color:#c5a16a}@media(max-width:750px){.member-spotlight,.spotlight-details{display:block}.spotlight-actions{margin-top:12px}}
+.directory-tools{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin:15px 0}.directory-tools label{font-size:12px;color:#d2b98e}.directory-tools input,.directory-tools select{margin-top:6px}.directory-cards{display:grid;gap:10px}.directory-member{display:flex;align-items:center;gap:12px;border:1px solid #493b2a;background:#24211d;border-radius:10px;padding:13px}.directory-avatar{width:43px;height:43px;flex:0 0 43px;border-radius:50%;background:#55432a;color:#f4e6d2;display:grid;place-items:center;font-weight:700;font-size:13px}.directory-info{flex:1;min-width:0}.directory-info strong{display:block;color:#f5e9d5}.directory-info p{margin:4px 0;font-size:13px}.directory-info small{display:block;color:#baa88f;font-size:11px}.directory-connect{padding:8px 11px;font-size:12px;white-space:nowrap}@media(max-width:700px){.directory-tools{grid-template-columns:1fr}.directory-member{flex-wrap:wrap}.directory-connect{margin-left:55px}}
 </style>
 </head>
 <body>
@@ -93,7 +94,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <button type="submit">Post to NBTX Club</button></form></details>
 <label>Show<select id="opportunity-filter"><option value="">All open posts</option><option value="ask">Requests</option><option value="offer">Offers</option></select></label>
 <div id="opportunities">Loading opportunities…</div></section>
-<section class="dashboard-panel"><h2>Member directory</h2><div id="directory">Loading members…</div></section>
+<section class="dashboard-panel"><h2>Member directory</h2><div class="directory-tools"><label>Search members<input id="directory-search" type="search" placeholder="Search name, company, or industry" autocomplete="off"></label><label>Industry<select id="directory-industry"><option value="">All industries</option></select></label></div><p id="directory-result-count" class="muted" role="status"></p><div id="directory" class="directory-cards">Loading members…</div></section>
 <section class="dashboard-panel"><h2>My business profile</h2>
 <details class="create-panel"><summary>Edit business profile</summary><form id="profile">
 <label>Display name<input name="name" required value="{{ auth('board')->user()->name }}"></label>
@@ -199,10 +200,49 @@ function showMemberSpotlight(members){
  connect.onclick=()=>{const select=document.getElementById('conversation-members');for(const option of select.options)option.selected=Number(option.value)===member.id;const form=document.getElementById('new-conversation');const panel=form.closest('details');if(panel)panel.open=true;form.scrollIntoView({behavior:'smooth',block:'center'});};
  actions.append(connect);root.append(info,actions);
 }
+let directoryMembers=[];
+function startMemberConversation(member){
+ const select=document.getElementById('conversation-members');
+ for(const option of select.options)option.selected=Number(option.value)===member.id;
+ const form=document.getElementById('new-conversation');const panel=form.closest('details');
+ if(panel)panel.open=true;
+ form.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function renderDirectory(){
+ const search=document.getElementById('directory-search').value.trim().toLowerCase();
+ const industry=document.getElementById('directory-industry').value;
+ const root=document.getElementById('directory');root.replaceChildren();
+ const filtered=directoryMembers.filter(m=>(!industry||(m.industry||'')===industry)&&(!search||[m.name,m.company,m.industry,m.title].some(v=>String(v||'').toLowerCase().includes(search))));
+ document.getElementById('directory-result-count').textContent=filtered.length+' member'+(filtered.length===1?'':'s')+' found';
+ for(const member of filtered){
+  const card=el('article','','directory-member');
+  const initials=el('span',String(member.name||'?').trim().split(/\\s+/).slice(0,2).map(n=>n[0]||'').join('').toUpperCase(),'directory-avatar');
+  const info=el('div','','directory-info');info.append(el('strong',member.name),el('p',member.company||'Business owner'));
+  if(member.industry)info.append(el('small',member.industry));
+  if(member.title)info.append(el('small',member.title));
+  card.append(initials,info);
+  if(member.id!=={{ auth('board')->id() }}){
+   const button=el('button','Message','directory-connect');button.type='button';button.onclick=()=>startMemberConversation(member);card.append(button);
+  }
+  root.append(card);
+ }
+ if(!filtered.length)root.textContent='No members match your search.';
+}
+document.getElementById('directory-search').addEventListener('input',renderDirectory);
+document.getElementById('directory-industry').addEventListener('change',renderDirectory);
 async function loadDirectory(){
- const data=await api('/api/members');showMemberSpotlight(data.data);const root=document.getElementById('directory');root.replaceChildren();document.getElementById('conversation-members').replaceChildren();const referralSelect=document.getElementById('referral-recipient');referralSelect.replaceChildren(new Option('Select a member',''));
- for(const member of data.data){const row=el('div',member.name+' — '+(member.company||'Business owner')+' · '+(member.industry||''),'message');root.append(row);if(member.id!=={{ auth('board')->id() }}){const option=document.createElement('option');option.value=member.id;option.textContent=member.name+' — '+(member.company||'');document.getElementById('conversation-members').append(option);referralSelect.append(new Option(member.name+' — '+(member.company||''),member.id))}}
- if(!data.data.length)root.textContent='No approved members yet.';
+ const data=await api('/api/members');directoryMembers=data.data;showMemberSpotlight(data.data);
+ const industrySelect=document.getElementById('directory-industry');const selected=industrySelect.value;
+ industrySelect.replaceChildren(new Option('All industries',''));
+ for(const industry of [...new Set(data.data.map(m=>m.industry).filter(Boolean))].sort())industrySelect.append(new Option(industry,industry));
+ industrySelect.value=selected;
+ const membersSelect=document.getElementById('conversation-members');membersSelect.replaceChildren();
+ const referralSelect=document.getElementById('referral-recipient');referralSelect.replaceChildren(new Option('Select a member',''));
+ for(const member of data.data){if(member.id!=={{ auth('board')->id() }}){
+  const option=document.createElement('option');option.value=member.id;option.textContent=member.name+' — '+(member.company||'');membersSelect.append(option);
+  referralSelect.append(new Option(member.name+' — '+(member.company||''),member.id));
+ }}
+ renderDirectory();
 }
 async function loadConversations(){
  const data=await api('/api/conversations');const root=document.getElementById('conversations');root.replaceChildren();document.getElementById('stat-messages').textContent=data.data.reduce((sum,c)=>sum+(Number(c.unread_count)||0),0);
