@@ -7,21 +7,25 @@
 <link rel="icon" href="/board-icon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#11171d">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="The Board">
-<title>The Board | Member Home</title>
+<meta name="apple-mobile-web-app-title" content="NBTX Club">
+<title>NBTX Club | Member Home</title>
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#11171d;color:#f5f0e8;font:16px system-ui,sans-serif}header{padding:22px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #3c4650}main{max-width:1100px;margin:auto;padding:24px}h1{font-family:Georgia,serif;letter-spacing:.12em}h2{font-size:1.1rem}button,input,textarea,select{font:inherit;padding:10px;border-radius:6px}button{cursor:pointer;background:#b99a61;color:#141414;border:0}input,textarea,select{background:#242e36;color:white;border:1px solid #5a636c;width:100%}section{background:#1c252d;padding:18px;border:1px solid #36414b;border-radius:10px;min-width:0} .layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}.muted{color:#c1c7ca}.message{border-bottom:1px solid #36414b;padding:10px 0;white-space:pre-wrap;overflow-wrap:anywhere}.item{display:block;width:100%;text-align:left;background:#2b3740;color:white;margin:8px 0}.item:focus{outline:2px solid #b99a61}.messages{height:270px;overflow:auto}label{display:block;margin:12px 0}small{color:#b9c3ca}#notice{min-height:24px;color:#e3c98c}@media(max-width:750px){.layout{grid-template-columns:1fr}main{padding:12px}header{padding:12px}}
+
+/* NBTX Club visual system */
+:root{color-scheme:dark;--gold:#d8b477;--edge:#483a29}body{background:#0d0e0e;color:#f4ede2;font-family:system-ui,sans-serif}header{position:sticky;top:0;z-index:5;background:#141414;border-color:#443624;padding:18px 30px 18px 275px}header strong{font:24px Georgia,serif;color:var(--gold);letter-spacing:.1em}header button{background:transparent;color:var(--gold);border:1px solid var(--gold)}main{max-width:1500px;margin:0;padding:35px 35px 70px 285px}h1{font:clamp(36px,4vw,54px) Georgia,serif;letter-spacing:0;margin:14px 0}h2{font:23px Georgia,serif}section{background:linear-gradient(140deg,#1b1b1b,#151515);border:1px solid #45392c;border-radius:12px;padding:24px}.layout{gap:22px}button{background:linear-gradient(#e2c58c,#bc9457);color:#16120c;font-weight:600}input,textarea,select{background:#101010;border-color:#5c503e}.item{background:#2b241c}.muted,small{color:#bdb2a4}.message{border-color:#41372b}#notice{color:var(--gold)}.nbtx-sidebar{position:fixed;inset:0 auto 0 0;width:245px;background:linear-gradient(#181715,#101010);border-right:1px solid #453823;padding:24px 14px;overflow-y:auto;z-index:10}.nbtx-logo{display:block;margin:6px 8px 28px;border:1px solid #b99a63;color:#f6edda;text-decoration:none;text-align:center;padding:14px 8px;font:34px Georgia,serif;letter-spacing:.1em}.nbtx-logo span{display:block;font:11px system-ui;letter-spacing:.5em;color:#e2bd7d}.nbtx-sidebar nav{display:grid;gap:5px}.nbtx-sidebar nav a{display:block;color:#e8e0d4;text-decoration:none;padding:13px;border-radius:7px;font-size:14px}.nbtx-sidebar nav a:hover,.nbtx-sidebar nav a:first-child{background:#60482c}.nbtx-intro{padding-bottom:20px;border-bottom:1px solid #453823;margin-bottom:24px}.nbtx-eyebrow{color:var(--gold);font-size:11px;letter-spacing:.23em;text-transform:uppercase}.nbtx-links{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 24px}.nbtx-links a{padding:12px 17px;border:1px solid #6a5233;border-radius:8px;color:#ead0a1;text-decoration:none;background:#241e16}@media(max-width:850px){.nbtx-sidebar{position:static;width:auto;padding:12px;border-right:0}.nbtx-logo{display:inline-block;font-size:23px;margin:0 0 8px}.nbtx-sidebar nav{display:flex;overflow-x:auto}.nbtx-sidebar nav a{white-space:nowrap;padding:9px}header{padding:12px 16px}main{padding:18px}.layout{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header><strong>THE BOARD</strong><form method="post" action="{{ route('board.logout') }}">@csrf<button type="submit">Sign out</button></form></header>
+<aside class="nbtx-sidebar"><a class="nbtx-logo" href="{{ route('board.home') }}">NBTX<span>CLUB</span></a><nav aria-label="Member navigation"><a href="{{ route('board.home') }}">⌂ &nbsp; Home</a><a href="#directory">◉ &nbsp; Directory</a><a href="#conversations">▤ &nbsp; Messages</a><a href="#board-meetings">▦ &nbsp; Meetings</a><a href="#referrals">↗ &nbsp; Referrals</a><a href="#opportunities">✦ &nbsp; Asks &amp; offers</a><a href="#profile">⚙ &nbsp; Profile</a>@if(in_array(auth('board')->user()->role, ['admin','super_admin'], true))<a href="{{ route('board.admin') }}">⚙ &nbsp; Admin</a>@endif</nav></aside>
+<header><strong>NBTX CLUB</strong><form method="post" action="{{ route('board.logout') }}">@csrf<button type="submit">Sign out</button></form></header>
 <main>
-<h1>Welcome, {{ auth('board')->user()->name }}</h1>
+<div class="nbtx-intro"><span class="nbtx-eyebrow">The private network · New Braunfels, Texas</span><h1>Welcome, {{ auth('board')->user()->name }}</h1><p class="muted">Good business starts with great connections.</p></div><div class="nbtx-links"><a href="#board-meetings">Meetings</a><a href="#directory">Member directory</a><a href="#conversations">Messages</a><a href="#new-referral">Make a referral</a></div>
 <p class="muted">A private community of local business owners.</p>
 @if(in_array(auth('board')->user()->role, ['admin', 'super_admin'], true))
 <p><a href="{{ route('board.admin') }}" style="color:#e3c98c">Manage invitations and approvals</a></p>
 @endif<p id="notice" role="status" aria-live="polite"></p>
-<section style="margin-bottom:18px"><h2>Phone notifications</h2><p class="muted">Enable alerts on this device. On iPhone, add The Board to your Home Screen first, then open it there to enable notifications.</p>
+<section style="margin-bottom:18px"><h2>Phone notifications</h2><p class="muted">Enable alerts on this device. On iPhone, add NBTX Club to your Home Screen first, then open it there to enable notifications.</p>
 <button type="button" id="enable-board-push">Enable notifications</button>
 <button type="button" id="disable-board-push">Disable on this device</button>
 <button type="button" id="test-board-push">Send test alert</button>
@@ -51,7 +55,7 @@
 <section><h2>Member asks &amp; offers</h2><p class="muted">Ask fellow owners for advice, resources or introductions—or share something your business can offer.</p>
 <form id="new-opportunity"><label>Post type<select name="type"><option value="ask">I need help with…</option><option value="offer">I can help with…</option></select></label>
 <label>Headline<input name="title" maxlength="180" required></label><label>Details<textarea name="details" maxlength="3000" rows="3" required></textarea></label>
-<button type="submit">Post to The Board</button></form>
+<button type="submit">Post to NBTX Club</button></form>
 <label>Show<select id="opportunity-filter"><option value="">All open posts</option><option value="ask">Requests</option><option value="offer">Offers</option></select></label>
 <div id="opportunities">Loading opportunities…</div></section>
 <section><h2>Member directory</h2><div id="directory">Loading members…</div></section>
@@ -269,7 +273,7 @@ async function loadOpportunities(){
 document.getElementById('opportunity-filter').onchange=()=>loadOpportunities().catch(showError);
 document.getElementById('new-opportunity').onsubmit=async event=>{
  event.preventDefault();const form=event.currentTarget;
- try{await api('/api/opportunities',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(form)))});form.reset();notice.textContent='Posted to The Board.';await loadOpportunities()}catch(error){showError(error)}
+ try{await api('/api/opportunities',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(form)))});form.reset();notice.textContent='Posted to NBTX Club.';await loadOpportunities()}catch(error){showError(error)}
 };
 
 async function loadReferrals(){
