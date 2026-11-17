@@ -88,7 +88,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <label>End<input type="datetime-local" name="ends_at" required></label>
 <label>Location<input name="location" maxlength="255" placeholder="The Clubhouse"></label>
 <label>Agenda<textarea name="description" maxlength="5000" rows="3"></textarea></label>
-<button type="submit">Create meeting</button></form></details>
+<button type="submit" id="create-meeting-button">Create meeting</button><p id="meeting-form-status" class="muted" role="status" aria-live="polite"></p></form></details>
 @endif</section>
 
 <section class="dashboard-panel"><h2>Business referrals</h2><p class="muted">Share a business opportunity privately with another member. Avoid including confidential customer information without permission.</p>
@@ -111,7 +111,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <label>Website<input name="website" type="url" value="{{ auth('board')->user()->website }}"></label>
 <label>About me<textarea name="bio" rows="3">{{ auth('board')->user()->bio }}</textarea></label>
 <button type="submit">Save profile</button></form></details></section>
-<section class="dashboard-panel"><h2>Conversations</h2><label class="conversation-search-label">Find conversation<input type="search" id="conversation-search" placeholder="Search conversations" autocomplete="off"></label><details class="create-panel"><summary>+ Start a conversation</summary><form id="new-conversation"><label>Conversation type<select name="type" id="conversation-type"><option value="direct">Direct message</option><option value="group">Group chat</option></select></label><label>Members<select name="member_ids" id="conversation-members" multiple size="5" required></select></label><label>Group name (for group chats)<input name="name" maxlength="120" placeholder="Business owners discussion"></label><button type="submit">Start conversation</button></form></details><div id="conversations">Loading conversations…</div></section>
+<section class="dashboard-panel"><h2>Conversations</h2><label class="conversation-search-label">Find conversation<input type="search" id="conversation-search" placeholder="Search conversations" autocomplete="off"></label><details class="create-panel"><summary>+ Start a conversation</summary><form id="new-conversation"><label>Conversation type<select name="type" id="conversation-type"><option value="direct">Direct message</option><option value="group">Group chat</option></select></label><label>Members<select name="member_ids" id="conversation-members" multiple size="5" required></select></label><label>Group name (for group chats)<input name="name" maxlength="120" placeholder="Business owners discussion"></label><button type="submit" id="start-conversation-button">Start conversation</button><p id="conversation-form-status" class="muted" role="status" aria-live="polite">Select a member to begin messaging.</p></form></details><div id="conversations">Loading conversations…</div></section>
 <section class="dashboard-panel"><h2 id="conversation-title">Chat</h2><div class="messages" id="messages" aria-live="polite">Choose a conversation to view messages.</div>
 <form id="chat"><label>Message<textarea name="body" rows="2" maxlength="5000" required placeholder="Write a message…"></textarea></label><div class="chat-compose-footer"><small id="chat-character-count">0 / 5000 characters</small><button type="submit" id="send" disabled>Send</button></div></form></section>
 </div>
@@ -190,7 +190,7 @@ const notice=document.getElementById('notice');
 let selectedConversation=null;
 async function api(path,options={}){
  const response=await fetch(path,{credentials:'same-origin',...options,headers:{'Accept':'application/json','X-CSRF-TOKEN':csrf,...(options.headers||{})}});
- if(!response.ok){throw new Error(response.status===403?'Access denied':response.status===419?'Session expired':'Request failed ('+response.status+')')}
+ if(!response.ok){let message=response.status===403?'Access denied':response.status===419?'Session expired — refresh the page and try again.':'Request failed ('+response.status+')';try{const details=await response.json();if(details.message)message=details.message;if(details.errors)message+=': '+Object.values(details.errors).flat().join('; ')}catch(_){}throw new Error(message)}
  return response.json();
 }
 function el(tag,text,className){const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node}
@@ -288,12 +288,17 @@ async function loadMessages(){
  if(!data.data.length)root.textContent='Start the conversation.';
  await loadConversations();
 }
-function showError(error){notice.textContent=error.message}
+function showError(error){notice.textContent=error.message;notice.scrollIntoView({behavior:'smooth',block:'nearest'})}
 document.getElementById('new-conversation').onsubmit=async event=>{
  event.preventDefault();const form=event.currentTarget;const type=form.elements.type.value;
+ const status=document.getElementById('conversation-form-status');const button=document.getElementById('start-conversation-button');
  const member_ids=Array.from(document.getElementById('conversation-members').selectedOptions).map(option=>Number(option.value));
+ if(!member_ids.length){status.textContent='Select at least one member to message.';return;}
+ if(type==='direct'&&member_ids.length!==1){status.textContent='Select exactly one member for a direct message.';return;}
+ button.disabled=true;status.textContent='Starting conversation…';
  try{const created=await api('/api/conversations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,name:form.elements.name.value,member_ids})});
- form.reset();await loadConversations();selectedConversation=created.id;document.getElementById('send').disabled=false;await loadMessages();notice.textContent='Conversation created.'}catch(error){showError(error)}
+ form.reset();await loadConversations();selectedConversation=created.id;document.getElementById('send').disabled=false;await loadMessages();status.textContent='Conversation ready. Type your message in the Chat panel.';notice.textContent='Conversation created.';document.getElementById('chat').scrollIntoView({behavior:'smooth',block:'center'});}
+ catch(error){status.textContent=error.message;showError(error)}finally{button.disabled=false}
 };
 function updateProfileReadiness(){
  const form=document.getElementById('profile');
@@ -368,9 +373,14 @@ async function loadMeetings(){
 const meetingForm=document.getElementById('new-meeting');
 if(meetingForm)meetingForm.onsubmit=async event=>{
  event.preventDefault();const form=event.currentTarget;const fields=Object.fromEntries(new FormData(form));
- try{await api('/api/meetings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...fields,starts_at:new Date(fields.starts_at).toISOString(),ends_at:new Date(fields.ends_at).toISOString()})});form.reset();notice.textContent='Meeting created.';await loadMeetings()}catch(error){showError(error)}
+ const status=document.getElementById('meeting-form-status');const button=document.getElementById('create-meeting-button');
+ const start=new Date(fields.starts_at),end=new Date(fields.ends_at);
+ if(!Number.isFinite(start.getTime())||!Number.isFinite(end.getTime())){status.textContent='Enter valid meeting start and end dates.';return;}
+ if(end<=start){status.textContent='The meeting end must be after the start.';return;}
+ button.disabled=true;status.textContent='Creating meeting…';
+ try{await api('/api/meetings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...fields,starts_at:start.toISOString(),ends_at:end.toISOString()})});form.reset();status.textContent='Meeting created successfully.';notice.textContent='Meeting created.';await loadMeetings()}
+ catch(error){status.textContent=error.message;showError(error)}finally{button.disabled=false}
 };
-
 let activityItems=[];
 let activityFilter='all';
 function renderActivity(){
