@@ -190,7 +190,7 @@ const notice=document.getElementById('notice');
 let selectedConversation=null;
 async function api(path,options={}){
  const response=await fetch(path,{credentials:'same-origin',...options,headers:{'Accept':'application/json','X-CSRF-TOKEN':csrf,...(options.headers||{})}});
- if(!response.ok){let message=response.status===403?'Access denied':response.status===419?'Session expired — refresh the page and try again.':'Request failed ('+response.status+')';try{const details=await response.json();if(details.message)message=details.message;if(details.errors)message+=': '+Object.values(details.errors).flat().join('; ')}catch(_){}throw new Error(message)}
+ if(!response.ok){let message=response.status===401?'Please sign in again.':response.status===403?'Access denied':response.status===419?'Session expired — refresh the page and try again.':'Request failed ('+response.status+')';try{const details=await response.json();if(details.message)message=details.message;if(details.errors)message+=': '+Object.values(details.errors).flat().join('; ')}catch(_){}throw new Error(message)}
  return response.json();
 }
 function el(tag,text,className){const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node}
@@ -368,7 +368,18 @@ function renderMeetings(){
  if(!visible.length)root.textContent=query?'No meetings match your search.':view==='past'?'No past meetings.':'No meetings to show.';
 }
 async function loadMeetings(){
- const data=await api('/api/meetings');cachedMeetings=data.data;renderMeetings();
+ const root=document.getElementById('board-meetings');
+ try{
+  const data=await api('/api/meetings');
+  if(!Array.isArray(data.data))throw new Error('Unexpected meetings response. Please contact support.');
+  cachedMeetings=data.data;renderMeetings();
+ }catch(error){
+  root.replaceChildren();
+  const message=document.createElement('p');message.setAttribute('role','alert');message.textContent='Could not load meetings: '+error.message;
+  const retry=document.createElement('button');retry.type='button';retry.textContent='Retry loading meetings';retry.onclick=()=>{root.textContent='Loading meetings…';loadMeetings()};
+  root.append(message,retry);
+  throw error;
+ }
 }
 const meetingForm=document.getElementById('new-meeting');
 if(meetingForm)meetingForm.onsubmit=async event=>{
