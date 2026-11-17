@@ -54,7 +54,7 @@ jobs:
           CACHE_STORE: array
         run: |
           set -o pipefail
-          php artisan test tests/Feature/BoardAccessTest.php 2>&1 | tee board-test-output.log
+          php artisan test tests/Feature/BoardAccessTest.php --display-warnings --fail-on-warning 2>&1 | tee board-test-output.log
       - name: Preserve Board test results
         if: always()
         uses: actions/upload-artifact@v4
