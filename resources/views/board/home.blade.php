@@ -41,6 +41,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 .referral-controls{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin:14px 0}.referral-controls label{font-size:12px;color:#c9b393}.referral-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.referral-summary-item{padding:10px;border:1px solid #53432d;border-radius:8px;background:#252019;text-align:center}.referral-summary-item strong{display:block;font-size:21px;color:#e6c38a}.referral-summary-item small{font-size:11px}.referral-card{padding:14px 0;border-bottom:1px solid #473a2a}.referral-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.referral-heading strong{color:#f2e5d1}.referral-status{border:1px solid #8a704b;border-radius:20px;padding:4px 9px;font-size:11px;text-transform:capitalize;color:#e6c38a}.referral-card p{white-space:pre-wrap;overflow-wrap:anywhere}.referral-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:12px}.referral-actions select{width:auto;max-width:180px}.referral-followup{font-size:12px;padding:9px 12px}@media(max-width:700px){.referral-controls{grid-template-columns:1fr}.referral-summary{grid-template-columns:repeat(2,1fr)}}
 .activity-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.activity-heading h2{margin:0}.activity-actions{display:flex;gap:7px;flex-wrap:wrap}.activity-actions button{padding:7px 11px;font-size:12px;background:#332b20;color:#e7d3b3;border:1px solid #58472e}.activity-actions button[aria-pressed="true"]{background:#c5a16a;color:#19140d}.activity-item{padding:13px 0;border-bottom:1px solid #493b2a}.activity-item-heading{display:flex;gap:9px;align-items:center}.activity-item-heading strong{color:#f0e3cf}.activity-new{border:1px solid #aa8650;border-radius:20px;padding:2px 7px;font-size:10px;color:#e5c18c}.activity-item p{margin:9px 0;white-space:pre-wrap;overflow-wrap:anywhere}.activity-item-actions{display:flex;gap:12px;align-items:center}.activity-item-actions a{color:#e3c98c;font-size:13px}.activity-item-actions button{padding:6px 10px;font-size:12px}
 .directory-tools{grid-template-columns:2fr 1fr 1fr}.directory-bio{font-size:12px;line-height:1.5;color:#c5b9a7;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:normal}.directory-website{display:inline-block;color:#e6c38a;font-size:12px;margin-top:7px}.conversation-search-label{font-size:12px;color:#d0b68c}.conversation-search-label input{margin-top:6px}.item[aria-pressed="true"]{outline:2px solid #c5a16a}@media(max-width:700px){.directory-tools{grid-template-columns:1fr}}
+.meeting-controls{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin:10px 0}.meeting-controls label{font-size:12px;color:#d5c2a4}.meeting-controls input,.meeting-controls select{margin-top:5px}@media(max-width:700px){.meeting-controls{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -75,7 +76,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <p id="push-status" class="muted" aria-live="polite"></p><p id="push-test-status" class="muted" aria-live="polite"></p></section></details>
 <section class="activity-panel"><div class="activity-heading"><h2>Recent activity <span id="activity-count"></span></h2><div class="activity-actions"><button type="button" id="activity-all" aria-pressed="true">All</button><button type="button" id="activity-unread" aria-pressed="false">Unread</button><button type="button" id="activity-refresh">Refresh ↻</button></div></div><div id="board-activity">Loading updates…</div></section>
 <div class="layout dashboard-grid">
-<section class="dashboard-panel"><h2>Upcoming meetings</h2><div id="board-meetings">Loading meetings…</div>
+<section class="dashboard-panel"><h2>Meetings</h2><div class="meeting-controls"><label>Show<select id="meeting-view"><option value="upcoming">Upcoming</option><option value="past">Past meetings</option><option value="all">All meetings</option></select></label><label>Find a meeting<input id="meeting-search" type="search" placeholder="Search title, location or agenda"></label></div><p id="meeting-result-count" class="muted" role="status"></p><div id="board-meetings">Loading meetings…</div>
 @if(in_array(auth('board')->user()->role, ['admin', 'super_admin'], true))
 <details class="create-panel"><summary>+ Schedule a meeting</summary><form id="new-meeting">
 <label>Title<input name="title" required maxlength="180"></label>
@@ -293,14 +294,22 @@ document.getElementById('chat').onsubmit=async event=>{
  const body=new FormData(event.currentTarget).get('body');
  try{await api('/api/conversations/'+selectedConversation+'/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({body})});event.currentTarget.reset();await loadMessages()}catch(error){showError(error)}
 };
-async function loadMeetings(){
- const data=await api('/api/meetings');const root=document.getElementById('board-meetings');root.replaceChildren();
- const upcoming=data.data.filter(m=>new Date(m.starts_at).getTime()>=Date.now()).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
+let cachedMeetings=[];
+document.getElementById('meeting-view').addEventListener('change',renderMeetings);
+document.getElementById('meeting-search').addEventListener('input',renderMeetings);
+function renderMeetings(){
+ const root=document.getElementById('board-meetings');root.replaceChildren();
+ const view=document.getElementById('meeting-view').value;
+ const query=document.getElementById('meeting-search').value.trim().toLowerCase();
+ const now=Date.now();
+ const visible=cachedMeetings.filter(m=>(view==='all'||(view==='upcoming'?new Date(m.starts_at).getTime()>=now:new Date(m.starts_at).getTime()<now))&&(!query||[m.title,m.location,m.description].some(v=>String(v||'').toLowerCase().includes(query)))).sort((a,b)=>view==='past'?new Date(b.starts_at)-new Date(a.starts_at):new Date(a.starts_at)-new Date(b.starts_at));
+ document.getElementById('meeting-result-count').textContent=visible.length+' meeting'+(visible.length===1?'':'s')+' found';
+ const upcoming=cachedMeetings.filter(m=>new Date(m.starts_at).getTime()>=Date.now()).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
  document.getElementById('stat-meetings').textContent=upcoming.length;
  const preview=document.getElementById('next-meeting-preview');preview.replaceChildren();
  if(upcoming.length){const next=upcoming[0];preview.append(el('strong',next.title),el('p',new Date(next.starts_at).toLocaleString()),el('p',next.location||'Location to be announced'));if(next.my_rsvp)preview.append(el('small','Your RSVP: '+next.my_rsvp));}
  else preview.textContent='No upcoming meetings scheduled.';
- for(const meeting of data.data){
+ for(const meeting of visible){
   const card=document.createElement('div');card.className='message';
   card.append(el('strong',meeting.title),el('div',new Date(meeting.starts_at).toLocaleString()+' – '+new Date(meeting.ends_at).toLocaleTimeString()),el('div',meeting.location||'Location to be announced'));
   if(meeting.description)card.append(el('p',meeting.description));
@@ -313,7 +322,10 @@ async function loadMeetings(){
   select.onchange=async()=>{if(!select.value)return;try{await api('/api/meetings/'+meeting.id+'/rsvp',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({response:select.value})});notice.textContent='RSVP saved.';await loadMeetings()}catch(error){showError(error)}};
   card.append(select);root.append(card);
  }
- if(!data.data.length)root.textContent='No upcoming meetings yet.';
+ if(!visible.length)root.textContent=query?'No meetings match your search.':view==='past'?'No past meetings.':'No meetings to show.';
+}
+async function loadMeetings(){
+ const data=await api('/api/meetings');cachedMeetings=data.data;renderMeetings();
 }
 const meetingForm=document.getElementById('new-meeting');
 if(meetingForm)meetingForm.onsubmit=async event=>{
