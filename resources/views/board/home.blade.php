@@ -36,6 +36,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 
 .overview-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}.stat-card{display:flex;flex-direction:column;gap:9px;background:#1d1b18;border:1px solid #403629;border-radius:12px;padding:22px;text-decoration:none;color:#f5eee1}.stat-card:hover{border-color:#d8b477}.stat-card span{font-size:13px;color:#cfc2b0}.stat-card strong{font:36px Georgia,serif;color:#e6c38a}.stat-card small{font-size:11px;color:#b8a58b}.overview-top{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;margin-bottom:30px}.overview-top section{background:#1b1a17;border:1px solid #403629;border-radius:12px;padding:23px}.overview-top h2{margin:10px 0 17px;font:23px Georgia,serif}.next-meeting-card #next-meeting-preview strong{display:block;font-size:17px;color:#f4e9d7}.next-meeting-card #next-meeting-preview p{margin:8px 0;font-size:13px}.overview-action{display:inline-block;margin-top:15px;color:#e2c18a;text-decoration:none;font-size:13px}.quick-actions-list{display:grid;grid-template-columns:1fr 1fr;gap:9px}.quick-actions-list a{border:1px solid #51412c;border-radius:8px;padding:12px;color:#e8d5b7;text-decoration:none;font-size:13px}.quick-actions-list a:hover{background:#33281b}.create-panel{margin:15px 0;border:1px solid #4d3c29;border-radius:8px;padding:0 12px}.create-panel summary{cursor:pointer;color:#e6c38a;font-size:13px;font-weight:600;padding:13px 0}.create-panel form{padding:5px 0 16px}.dashboard-grid{scroll-margin-top:90px}#board-meetings,#referrals,#opportunities,#directory,#conversations{scroll-margin-top:100px}
 @media(max-width:1100px){.overview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.overview-top{grid-template-columns:1fr}.overview-stats{gap:10px}.stat-card{padding:15px}.stat-card strong{font-size:29px}.quick-actions-list{grid-template-columns:1fr 1fr}}
+.member-spotlight{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:22px 26px;margin:0 0 24px;border:1px solid #53422c;border-radius:12px;background:linear-gradient(115deg,#242018,#191917)}.member-spotlight h2{font:24px Georgia,serif;margin:9px 0}.spotlight-details{display:flex;align-items:center;gap:20px;justify-content:space-between;min-width:40%}.spotlight-details strong{font-size:18px;color:#f3e4cd}.spotlight-details p{margin:6px 0}.spotlight-details small{color:#c6ac86}.spotlight-actions button{white-space:nowrap}.referral-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.referral-tabs button{padding:8px 13px;font-size:12px;border-radius:7px}.referral-tabs button[aria-pressed="true"]{background:#c5a16a;color:#17130e;border-color:#c5a16a}@media(max-width:750px){.member-spotlight,.spotlight-details{display:block}.spotlight-actions{margin-top:12px}}
 </style>
 </head>
 <body>
@@ -53,6 +54,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <section class="next-meeting-card"><span class="nbtx-eyebrow">UP NEXT</span><h2>Next meeting</h2><div id="next-meeting-preview" class="muted">Loading upcoming meetings…</div><a href="#board-meetings" class="overview-action">All meetings ↗</a></section>
 <section class="quick-actions-card"><span class="nbtx-eyebrow">QUICK ACTIONS</span><h2>Connect with your network</h2><div class="quick-actions-list"><a href="#directory">Find a member ↗</a><a href="#new-conversation">Start a conversation ↗</a><a href="#new-referral">Send a referral ↗</a><a href="#new-opportunity">Post an opportunity ↗</a></div></section>
 </div>
+<section class="member-spotlight" aria-label="Member spotlight"><div><span class="nbtx-eyebrow">DISCOVER YOUR NETWORK</span><h2>Member spotlight</h2><p class="muted">Get to know a fellow New Braunfels business owner.</p></div><div id="member-spotlight-content" class="spotlight-details">Loading a member…</div></section>
 <div class="dashboard-section-label"><div><span class="nbtx-eyebrow">YOUR NETWORK</span><h2>What's happening</h2></div><span class="muted">Stay connected with your community</span></div>
 
 @if(in_array(auth('board')->user()->role, ['admin', 'super_admin'], true))
@@ -84,7 +86,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <details class="create-panel"><summary>+ Send a referral</summary><form id="new-referral"><label>Send to<select name="to_member_id" id="referral-recipient" required><option value="">Select a member</option></select></label>
 <label>Opportunity<input name="subject" maxlength="180" required></label>
 <label>Details<textarea name="details" maxlength="3000" rows="3"></textarea></label>
-<button type="submit">Send referral</button></form></details><div id="referrals">Loading referrals…</div></section>
+<button type="submit">Send referral</button></form></details><div class="referral-tabs" role="group" aria-label="Filter referrals"><button type="button" data-referral-view="all" aria-pressed="true">All</button><button type="button" data-referral-view="received" aria-pressed="false">Received</button><button type="button" data-referral-view="sent" aria-pressed="false">Sent</button></div><div id="referrals">Loading referrals…</div></section>
 <section class="dashboard-panel"><h2>Member asks &amp; offers</h2><p class="muted">Ask fellow owners for advice, resources or introductions—or share something your business can offer.</p>
 <details class="create-panel"><summary>+ Post an opportunity</summary><form id="new-opportunity"><label>Post type<select name="type"><option value="ask">I need help with…</option><option value="offer">I can help with…</option></select></label>
 <label>Headline<input name="title" maxlength="180" required></label><label>Details<textarea name="details" maxlength="3000" rows="3" required></textarea></label>
@@ -184,8 +186,21 @@ async function api(path,options={}){
  return response.json();
 }
 function el(tag,text,className){const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node}
+function showMemberSpotlight(members){
+ const root=document.getElementById('member-spotlight-content');root.replaceChildren();
+ const eligible=members.filter(m=>m.id!=={{ auth('board')->id() }});
+ if(!eligible.length){root.textContent='Member spotlights will appear as the network grows.';return;}
+ const day=Math.floor(Date.now()/86400000);
+ const member=eligible[day%eligible.length];
+ const info=document.createElement('div');info.append(el('strong',member.name),el('p',member.company||'Local business owner'));
+ if(member.industry)info.append(el('small',member.industry));
+ const actions=document.createElement('div');actions.className='spotlight-actions';
+ const connect=document.createElement('button');connect.type='button';connect.textContent='Start a conversation';
+ connect.onclick=()=>{const select=document.getElementById('conversation-members');for(const option of select.options)option.selected=Number(option.value)===member.id;const form=document.getElementById('new-conversation');const panel=form.closest('details');if(panel)panel.open=true;form.scrollIntoView({behavior:'smooth',block:'center'});};
+ actions.append(connect);root.append(info,actions);
+}
 async function loadDirectory(){
- const data=await api('/api/members');const root=document.getElementById('directory');root.replaceChildren();document.getElementById('conversation-members').replaceChildren();const referralSelect=document.getElementById('referral-recipient');referralSelect.replaceChildren(new Option('Select a member',''));
+ const data=await api('/api/members');showMemberSpotlight(data.data);const root=document.getElementById('directory');root.replaceChildren();document.getElementById('conversation-members').replaceChildren();const referralSelect=document.getElementById('referral-recipient');referralSelect.replaceChildren(new Option('Select a member',''));
  for(const member of data.data){const row=el('div',member.name+' — '+(member.company||'Business owner')+' · '+(member.industry||''),'message');root.append(row);if(member.id!=={{ auth('board')->id() }}){const option=document.createElement('option');option.value=member.id;option.textContent=member.name+' — '+(member.company||'');document.getElementById('conversation-members').append(option);referralSelect.append(new Option(member.name+' — '+(member.company||''),member.id))}}
  if(!data.data.length)root.textContent='No approved members yet.';
 }
@@ -314,9 +329,15 @@ document.getElementById('new-opportunity').onsubmit=async event=>{
  try{await api('/api/opportunities',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(form)))});form.reset();notice.textContent='Posted to NBTX Club.';await loadOpportunities()}catch(error){showError(error)}
 };
 
+let referralView='all';
+document.querySelectorAll('[data-referral-view]').forEach(button=>button.addEventListener('click',()=>{
+ referralView=button.dataset.referralView;
+ document.querySelectorAll('[data-referral-view]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+ loadReferrals().catch(showError);
+}));
 async function loadReferrals(){
  const data=await api('/api/referrals');const root=document.getElementById('referrals');root.replaceChildren();document.getElementById('stat-referrals').textContent=data.data.filter(r=>r.status==='new').length;
- for(const referral of data.data){
+ for(const referral of data.data.filter(r=>referralView==='all'||(referralView==='received'?r.to_member_id==={{ auth('board')->id() }}:r.from_member_id==={{ auth('board')->id() }}))){
   const card=el('div',referral.subject+' · '+referral.status+' · '+referral.from_name+' → '+referral.to_name,'message');
   if(referral.details)card.append(el('p',referral.details));
   if(referral.to_member_id==={{ auth('board')->id() }}){
