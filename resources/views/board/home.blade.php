@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/board-icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#11171d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="The Board">
 <title>The Board | Member Home</title>
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#11171d;color:#f5f0e8;font:16px system-ui,sans-serif}header{padding:22px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #3c4650}main{max-width:1100px;margin:auto;padding:24px}h1{font-family:Georgia,serif;letter-spacing:.12em}h2{font-size:1.1rem}button,input,textarea,select{font:inherit;padding:10px;border-radius:6px}button{cursor:pointer;background:#b99a61;color:#141414;border:0}input,textarea,select{background:#242e36;color:white;border:1px solid #5a636c;width:100%}section{background:#1c252d;padding:18px;border:1px solid #36414b;border-radius:10px;min-width:0} .layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}.muted{color:#c1c7ca}.message{border-bottom:1px solid #36414b;padding:10px 0;white-space:pre-wrap;overflow-wrap:anywhere}.item{display:block;width:100%;text-align:left;background:#2b3740;color:white;margin:8px 0}.item:focus{outline:2px solid #b99a61}.messages{height:270px;overflow:auto}label{display:block;margin:12px 0}small{color:#b9c3ca}#notice{min-height:24px;color:#e3c98c}@media(max-width:750px){.layout{grid-template-columns:1fr}main{padding:12px}header{padding:12px}}
