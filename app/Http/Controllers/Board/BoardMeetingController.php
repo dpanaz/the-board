@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Board;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -39,6 +40,11 @@ class BoardMeetingController extends Controller
             'starts_at' => ['required', 'date', 'after:now'],
             'ends_at' => ['required', 'date', 'after:starts_at'],
         ]);
+        // MySQL DATETIME does not accept ISO 8601 values such as 2026-11-24T22:41:00.000Z.
+        // Normalize both timestamps to UTC SQL datetime strings before inserting.
+        $data['starts_at'] = CarbonImmutable::parse($data['starts_at'])->utc()->format('Y-m-d H:i:s');
+        $data['ends_at'] = CarbonImmutable::parse($data['ends_at'])->utc()->format('Y-m-d H:i:s');
+
         $id = DB::table('board_meetings')->insertGetId([
             ...$data,
             'created_by' => $request->user('board')->id,
