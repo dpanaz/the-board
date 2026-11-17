@@ -460,4 +460,13 @@ class BoardAccessTest extends TestCase
         $this->assertSame('the_board_session', config('session.cookie'));
         $this->assertSame('theboard.clubhouseoncastell.com', config('session.domain'));
     }
+
+    public function test_board_manifest_and_service_worker_are_served_as_static_assets(): void
+    {
+        $manifest = json_decode(file_get_contents(public_path('manifest.webmanifest')), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame('The Board', $manifest['name']);
+        $this->assertSame('standalone', $manifest['display']);
+        $this->assertFileExists(public_path('board-sw.js'));
+        $this->assertFileExists(public_path('board-icon.svg'));
+    }
 }
