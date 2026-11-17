@@ -42,6 +42,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 .activity-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.activity-heading h2{margin:0}.activity-actions{display:flex;gap:7px;flex-wrap:wrap}.activity-actions button{padding:7px 11px;font-size:12px;background:#332b20;color:#e7d3b3;border:1px solid #58472e}.activity-actions button[aria-pressed="true"]{background:#c5a16a;color:#19140d}.activity-item{padding:13px 0;border-bottom:1px solid #493b2a}.activity-item-heading{display:flex;gap:9px;align-items:center}.activity-item-heading strong{color:#f0e3cf}.activity-new{border:1px solid #aa8650;border-radius:20px;padding:2px 7px;font-size:10px;color:#e5c18c}.activity-item p{margin:9px 0;white-space:pre-wrap;overflow-wrap:anywhere}.activity-item-actions{display:flex;gap:12px;align-items:center}.activity-item-actions a{color:#e3c98c;font-size:13px}.activity-item-actions button{padding:6px 10px;font-size:12px}
 .directory-tools{grid-template-columns:2fr 1fr 1fr}.directory-bio{font-size:12px;line-height:1.5;color:#c5b9a7;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:normal}.directory-website{display:inline-block;color:#e6c38a;font-size:12px;margin-top:7px}.conversation-search-label{font-size:12px;color:#d0b68c}.conversation-search-label input{margin-top:6px}.item[aria-pressed="true"]{outline:2px solid #c5a16a}@media(max-width:700px){.directory-tools{grid-template-columns:1fr}}
 .meeting-controls{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin:10px 0}.meeting-controls label{font-size:12px;color:#d5c2a4}.meeting-controls input,.meeting-controls select{margin-top:5px}@media(max-width:700px){.meeting-controls{grid-template-columns:1fr}}
+.opportunity-controls{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin:10px 0}.opportunity-controls label{font-size:12px;color:#d5c2a4}.opportunity-controls input,.opportunity-controls select{margin-top:5px}@media(max-width:700px){.opportunity-controls{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -96,8 +97,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <details class="create-panel"><summary>+ Post an opportunity</summary><form id="new-opportunity"><label>Post type<select name="type"><option value="ask">I need help with…</option><option value="offer">I can help with…</option></select></label>
 <label>Headline<input name="title" maxlength="180" required></label><label>Details<textarea name="details" maxlength="3000" rows="3" required></textarea></label>
 <button type="submit">Post to NBTX Club</button></form></details>
-<label>Show<select id="opportunity-filter"><option value="">All open posts</option><option value="ask">Requests</option><option value="offer">Offers</option></select></label>
-<div id="opportunities">Loading opportunities…</div></section>
+<div class="opportunity-controls"><label>Show<select id="opportunity-filter"><option value="">All open posts</option><option value="ask">Requests</option><option value="offer">Offers</option></select></label><label>Search posts<input type="search" id="opportunity-search" placeholder="Search members, businesses or details"></label></div><p id="opportunity-result-count" class="muted" role="status"></p><div id="opportunities">Loading opportunities…</div></section>
 <section class="dashboard-panel"><h2>Member directory</h2><div class="directory-tools"><label>Search members<input id="directory-search" type="search" placeholder="Search name, company, or industry" autocomplete="off"></label><label>Industry<select id="directory-industry"><option value="">All industries</option></select></label><label>Sort by<select id="directory-sort"><option value="name">Name A–Z</option><option value="company">Company A–Z</option></select></label></div><p id="directory-result-count" class="muted" role="status"></p><div id="directory" class="directory-cards">Loading members…</div></section>
 <section class="dashboard-panel"><h2>My business profile</h2>
 <details class="create-panel"><summary>Edit business profile</summary><form id="profile">
@@ -392,25 +392,37 @@ document.getElementById('test-board-push').addEventListener('click',async()=>{
   await loadPushTestStatus();
  }catch(error){showError(error)}
 });
-async function loadOpportunities(){
+let cachedOpportunities=[];
+function renderOpportunities(){
  const type=document.getElementById('opportunity-filter').value;
- const data=await api('/api/opportunities'+(type?'?type='+encodeURIComponent(type):''));
- const root=document.getElementById('opportunities');root.replaceChildren();if(!type)document.getElementById('stat-opportunities').textContent=data.data.length;
- for(const item of data.data){
-  const card=el('div','','message');
+ const query=document.getElementById('opportunity-search').value.trim().toLowerCase();
+ const visible=cachedOpportunities.filter(item=>(!type||item.type===type)&&(!query||[item.title,item.details,item.member_name,item.company].some(v=>String(v||'').toLowerCase().includes(query))));
+ const root=document.getElementById('opportunities');root.replaceChildren();
+ document.getElementById('opportunity-result-count').textContent=visible.length+' open post'+(visible.length===1?'':'s')+' found';
+ for(const item of visible){
+  const card=el('article','','message');
   card.append(el('strong',(item.type==='ask'?'REQUEST: ':'OFFER: ')+item.title));
   card.append(el('small',item.member_name+' · '+(item.company||'Local business owner')));
   card.append(el('p',item.details));
   if(item.member_id==={{ auth('board')->id() }}){
    const button=document.createElement('button');button.type='button';button.textContent='Close post';
-   button.onclick=async()=>{try{await api('/api/opportunities/'+item.id+'/close',{method:'PATCH'});await loadOpportunities()}catch(error){showError(error)}};
+   button.onclick=async()=>{button.disabled=true;try{await api('/api/opportunities/'+item.id+'/close',{method:'PATCH'});await loadOpportunities()}catch(error){button.disabled=false;showError(error)}};
    card.append(button);
+  }else{
+   const member=directoryMembers.find(m=>m.id===item.member_id);
+   if(member){const button=document.createElement('button');button.type='button';button.textContent='Message member';button.onclick=()=>startMemberConversation(member);card.append(button);}
   }
   root.append(card);
  }
- if(!data.data.length)root.textContent='No open posts yet.';
+ if(!visible.length)root.textContent=query?'No posts match your search.':'No open posts in this category.';
 }
-document.getElementById('opportunity-filter').onchange=()=>loadOpportunities().catch(showError);
+document.getElementById('opportunity-filter').addEventListener('change',renderOpportunities);
+document.getElementById('opportunity-search').addEventListener('input',renderOpportunities);
+async function loadOpportunities(){
+ const data=await api('/api/opportunities');cachedOpportunities=data.data;
+ document.getElementById('stat-opportunities').textContent=data.data.length;
+ renderOpportunities();
+}
 document.getElementById('new-opportunity').onsubmit=async event=>{
  event.preventDefault();const form=event.currentTarget;
  try{await api('/api/opportunities',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(form)))});form.reset();notice.textContent='Posted to NBTX Club.';await loadOpportunities()}catch(error){showError(error)}
