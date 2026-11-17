@@ -2,6 +2,9 @@
 
 **Separate application:** deploy this repository, never `clubhouse-app-v2`. The legacy Board prototype in Clubhouse PR #142 must remain unmerged and be closed after migration is accepted.
 
+## Hosting decision
+The Board will use the **same hosting provider as The Clubhouse**, but must be provisioned as a **separate application/site** with its own deploy target, document root, database credentials, secrets, writable storage, scheduler and logs. Do not point the Board domain to the Clubhouse application's public directory or share the Clubhouse database user. Confirm the provider's application-level isolation before launch.
+
 ## Infrastructure (must be independently provisioned)
 - [ ] Dedicated PHP 8.4 hosting service with web root `public/`; HTTPS for `theboard.clubhouseoncastell.com`.
 - [ ] Dedicated MySQL database `the_board` and user, with no grants to Clubhouse databases.
@@ -24,7 +27,7 @@
 - [ ] Dedicated repository and Board-only Laravel runtime
 - [ ] No shared Clubhouse database, auth, session, cache, queue or scheduler
 - [ ] Clean Board feature tests (no warnings) and migration verification
-- [ ] Reproducible `composer.lock` checked into this repository
+- [x] Reproducible `composer.lock` checked into this repository
 - [ ] Secure invitation-only membership, admin approval and role authorization
 - [ ] Directory, direct/group chat, meetings/RSVPs, referrals and asks/offers
 - [ ] Web push on supported Android/iPhone installations, with VAPID configured and delivery tested on actual devices
