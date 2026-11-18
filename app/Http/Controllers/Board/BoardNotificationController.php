@@ -14,6 +14,7 @@ class BoardNotificationController extends Controller
         $memberId = $request->user('board')->id;
         return response()->json([
             'unread_count' => DB::table('board_notifications')->where('member_id', $memberId)->whereNull('read_at')->count(),
+            'sounding_board_unread_count' => DB::table('board_notifications')->where('member_id', $memberId)->whereNull('read_at')->where('url', 'like', '/sounding-board#question-%')->count(),
             'items' => DB::table('board_notifications')->where('member_id', $memberId)
                 ->select('id', 'category', 'title', 'body', 'url', 'read_at', 'created_at')
                 ->orderByDesc('id')->limit(50)->get(),

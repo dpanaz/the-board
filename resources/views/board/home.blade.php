@@ -46,10 +46,11 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 .profile-readiness{padding:14px;border:1px solid #57472f;border-radius:10px;margin:12px 0;background:rgba(197,161,106,.06)}.profile-readiness-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.profile-readiness progress{display:block;width:100%;height:12px;accent-color:#c5a16a;margin-top:10px}.profile-readiness .muted{margin:9px 0 0;font-size:12px;line-height:1.5}
 .chat-message{margin:8px 0;overflow-wrap:anywhere}.chat-message small{display:block;color:#d1b783;font-size:11px;margin-bottom:5px}.chat-message p{margin:0;white-space:pre-wrap;line-height:1.5}.chat-message-own{border-left:3px solid #c5a16a;padding-left:12px;background:rgba(197,161,106,.06)}.chat-compose-footer{display:flex;justify-content:space-between;align-items:center;gap:12px}.chat-compose-footer small{color:#b7a88f;font-size:11px}
 .meeting-calendar-button{font-size:12px;padding:7px 10px;margin:8px 10px 8px 0;background:#3a3023;color:#e7cf9e;border:1px solid #7d633f}
+.alert-badge{display:none;align-items:center;justify-content:center;min-width:21px;height:21px;padding:0 6px;border-radius:999px;background:#d8b477;color:#18130c;font:700 11px system-ui,sans-serif;margin-left:7px;vertical-align:middle}.alert-badge:not([hidden]){display:inline-flex}.nbtx-sidebar nav a .alert-badge{float:right;margin-top:-2px}.activity-heading .alert-badge{margin-left:8px}
 </style>
 </head>
 <body>
-<aside class="nbtx-sidebar"><a class="nbtx-logo" href="{{ route('board.home') }}">NBTX<span>CLUB</span></a><nav aria-label="Member navigation"><a href="{{ route('board.home') }}">⌂ &nbsp; Home</a><a href="#directory">◉ &nbsp; Directory</a><a href="#conversations">▤ &nbsp; Messages</a><a href="{{ route('board.discussions.page') }}">◇ &nbsp; The Sounding Board</a><a href="#board-meetings">▦ &nbsp; Meetings</a><a href="#referrals">↗ &nbsp; Referrals</a><a href="#opportunities">✦ &nbsp; Asks &amp; offers</a><a href="#profile">⚙ &nbsp; Profile</a>@if(in_array(auth('board')->user()->role, ['admin','super_admin'], true))<a href="{{ route('board.admin') }}">⚙ &nbsp; Admin</a>@endif</nav></aside>
+<aside class="nbtx-sidebar"><a class="nbtx-logo" href="{{ route('board.home') }}">NBTX<span>CLUB</span></a><nav aria-label="Member navigation"><a href="{{ route('board.home') }}">⌂ &nbsp; Home</a><a href="#directory">◉ &nbsp; Directory</a><a href="#conversations">▤ &nbsp; Messages</a><a href="{{ route('board.discussions.page') }}">◇ &nbsp; The Sounding Board <span class="alert-badge" id="sounding-board-nav-badge" hidden aria-label="Unread Sounding Board replies"></span></a><a href="#board-meetings">▦ &nbsp; Meetings</a><a href="#referrals">↗ &nbsp; Referrals</a><a href="#opportunities">✦ &nbsp; Asks &amp; offers</a><a href="#profile">⚙ &nbsp; Profile</a>@if(in_array(auth('board')->user()->role, ['admin','super_admin'], true))<a href="{{ route('board.admin') }}">⚙ &nbsp; Admin</a>@endif</nav></aside>
 <header><strong>NBTX CLUB</strong><form method="post" action="{{ route('board.logout') }}">@csrf<button type="submit">Sign out</button></form></header>
 <main>
 <div class="dashboard-heading"><div><span class="nbtx-eyebrow">MEMBER OVERVIEW · NEW BRAUNFELS</span><h1>Good to see you, {{ explode(' ', trim(auth('board')->user()->name))[0] }}.</h1><p class="muted">Your connections, conversations, and opportunities—all in one place.</p></div><div class="dashboard-date">{{ now()->format('l, F j') }}</div></div>
@@ -61,7 +62,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 </div>
 <div class="overview-top">
 <section class="next-meeting-card"><span class="nbtx-eyebrow">UP NEXT</span><h2>Next meeting</h2><div id="next-meeting-preview" class="muted">Loading upcoming meetings…</div><a href="#board-meetings" class="overview-action">All meetings ↗</a></section>
-<section class="quick-actions-card"><span class="nbtx-eyebrow">QUICK ACTIONS</span><h2>Connect with your network</h2><div class="quick-actions-list"><a href="#directory">Find a member ↗</a><a href="#new-conversation">Start a conversation ↗</a><a href="#new-referral">Send a referral ↗</a><a href="#new-opportunity">Post an opportunity ↗</a><a href="{{ route('board.discussions.page') }}">Ask the Sounding Board ↗</a></div></section>
+<section class="quick-actions-card"><span class="nbtx-eyebrow">QUICK ACTIONS</span><h2>Connect with your network</h2><div class="quick-actions-list"><a href="#directory">Find a member ↗</a><a href="#new-conversation">Start a conversation ↗</a><a href="#new-referral">Send a referral ↗</a><a href="#new-opportunity">Post an opportunity ↗</a><a href="{{ route('board.discussions.page') }}">Ask the Sounding Board ↗ <span class="alert-badge" id="sounding-board-action-badge" hidden></span></a></div></section>
 </div>
 <section class="member-spotlight" aria-label="Member spotlight"><div><span class="nbtx-eyebrow">DISCOVER YOUR NETWORK</span><h2>Member spotlight</h2><p class="muted">Get to know a fellow New Braunfels business owner.</p></div><div id="member-spotlight-content" class="spotlight-details">Loading a member…</div></section>
 <div class="dashboard-section-label"><div><span class="nbtx-eyebrow">YOUR NETWORK</span><h2>What's happening</h2></div><span class="muted">Stay connected with your community</span></div>
@@ -78,7 +79,7 @@ header{box-shadow:0 1px 0 #2d281f}main{padding-top:32px;max-width:1600px}
 <label><input type="checkbox" name="referrals" checked style="width:auto"> Business referrals</label>
 <button type="submit">Save notification preferences</button></form>
 <p id="push-status" class="muted" aria-live="polite"></p><p id="push-test-status" class="muted" aria-live="polite"></p></section></details>
-<section class="activity-panel"><div class="activity-heading"><h2>Recent activity <span id="activity-count"></span></h2><div class="activity-actions"><button type="button" id="activity-all" aria-pressed="true">All</button><button type="button" id="activity-unread" aria-pressed="false">Unread</button><button type="button" id="activity-refresh">Refresh ↻</button></div></div><div id="board-activity">Loading updates…</div></section>
+<section class="activity-panel"><div class="activity-heading"><h2>Recent activity <span class="alert-badge" id="activity-badge" hidden></span> <span id="activity-count"></span></h2><div class="activity-actions"><button type="button" id="activity-all" aria-pressed="true">All</button><button type="button" id="activity-unread" aria-pressed="false">Unread</button><button type="button" id="activity-refresh">Refresh ↻</button></div></div><div id="board-activity">Loading updates…</div></section>
 <div class="layout dashboard-grid">
 <section class="dashboard-panel"><h2>Meetings</h2><div class="meeting-controls"><label>Show<select id="meeting-view"><option value="upcoming">Upcoming</option><option value="past">Past meetings</option><option value="all">All meetings</option></select></label><label>Find a meeting<input id="meeting-search" type="search" placeholder="Search title, location or agenda"></label></div><p id="meeting-result-count" class="muted" role="status"></p><div id="board-meetings">Loading meetings…</div>
 @if(in_array(auth('board')->user()->role, ['admin', 'super_admin'], true))
@@ -427,6 +428,12 @@ async function loadActivity(){
  const data=await api('/api/notifications');activityItems=data.items||[];
  const unread=activityItems.filter(item=>!item.read_at).length;
  document.getElementById('activity-count').textContent=(data.unread_count??unread)?'('+(data.unread_count??unread)+' new)':'';
+ const total=Number(data.unread_count??unread);
+ const sounding=Number(data.sounding_board_unread_count??activityItems.filter(item=>!item.read_at&&item.url?.startsWith('/sounding-board#question-')).length);
+ for(const id of ['sounding-board-nav-badge','sounding-board-action-badge']){
+  const badge=document.getElementById(id);badge.hidden=sounding===0;badge.textContent=sounding>99?'99+':String(sounding);badge.setAttribute('aria-label',sounding+' unread Sounding Board replies');
+ }
+ const activityBadge=document.getElementById('activity-badge');activityBadge.hidden=total===0;activityBadge.textContent=total>99?'99+':String(total);
  renderActivity();
 }
 
