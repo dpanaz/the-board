@@ -26,6 +26,7 @@ Route::domain(config('services.board.domain', 'theboard.clubhouseoncastell.com')
         Route::post('/api/discussions', [BoardDiscussionController::class, 'store'])->middleware('throttle:5,1')->name('discussions.store');
         Route::get('/api/discussions/{discussion}', [BoardDiscussionController::class, 'show'])->name('discussions.show');
         Route::post('/api/discussions/{discussion}/replies', [BoardDiscussionController::class, 'reply'])->middleware('throttle:15,1')->name('discussions.reply');
+        Route::post('/api/discussions/{discussion}/vote', [BoardDiscussionController::class, 'vote'])->middleware('throttle:15,1')->name('discussions.vote');
         Route::post('/api/discussions/{discussion}/outcome', [BoardDiscussionController::class, 'outcome'])->middleware('throttle:5,1')->name('discussions.outcome');
         Route::get('/admin', function (\Illuminate\Http\Request $request) {
             abort_unless(in_array($request->user('board')->role, ['admin', 'super_admin'], true), 403);
