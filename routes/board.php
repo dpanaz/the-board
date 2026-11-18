@@ -5,6 +5,7 @@ use App\Http\Controllers\Board\BoardCommunityController;
 use App\Http\Controllers\Board\BoardAdminController;
 use App\Http\Controllers\Board\BoardPushController;
 use App\Http\Controllers\Board\BoardMeetingController;
+use App\Http\Controllers\Board\BoardDiscussionController;
 use App\Http\Controllers\Board\BoardReferralController;
 use App\Http\Controllers\Board\BoardNotificationController;
 use App\Http\Controllers\Board\BoardOpportunityController;
@@ -20,6 +21,12 @@ Route::domain(config('services.board.domain', 'theboard.clubhouseoncastell.com')
 
     Route::middleware(['auth:board', EnsureApprovedBoardMember::class])->group(function (): void {
         Route::view('/home', 'board.home')->name('home');
+        Route::view('/sounding-board', 'board.discussions')->name('discussions.page');
+        Route::get('/api/discussions', [BoardDiscussionController::class, 'index'])->name('discussions.index');
+        Route::post('/api/discussions', [BoardDiscussionController::class, 'store'])->middleware('throttle:5,1')->name('discussions.store');
+        Route::get('/api/discussions/{discussion}', [BoardDiscussionController::class, 'show'])->name('discussions.show');
+        Route::post('/api/discussions/{discussion}/replies', [BoardDiscussionController::class, 'reply'])->middleware('throttle:15,1')->name('discussions.reply');
+        Route::post('/api/discussions/{discussion}/outcome', [BoardDiscussionController::class, 'outcome'])->middleware('throttle:5,1')->name('discussions.outcome');
         Route::get('/admin', function (\Illuminate\Http\Request $request) {
             abort_unless(in_array($request->user('board')->role, ['admin', 'super_admin'], true), 403);
             return view('board.admin');
