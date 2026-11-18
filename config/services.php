@@ -1,6 +1,6 @@
 <?php
 return [
- 'board'=>['domain'=>env('BOARD_DOMAIN','theboard.clubhouseoncastell.com')],
+ 'board'=>['domain'=>env('BOARD_DOMAIN','nbtx.club')],
  'webpush'=>[
   'public_key'=>env('WEBPUSH_VAPID_PUBLIC_KEY'),
   'private_key'=>env('WEBPUSH_VAPID_PRIVATE_KEY'),
